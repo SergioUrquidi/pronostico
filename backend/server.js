@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+const { initDb } = require('./src/db');
 const authRoutes = require('./src/routes/auth.routes');
 const matchesRoutes = require('./src/routes/matches.routes');
 const predictionsRoutes = require('./src/routes/predictions.routes');
@@ -28,4 +29,12 @@ app.use((err, _req, res, _next) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Pronostico API escuchando en puerto ${PORT}`));
+
+initDb()
+  .then(() => {
+    app.listen(PORT, () => console.log(`Pronostico API escuchando en puerto ${PORT}`));
+  })
+  .catch((err) => {
+    console.error('No se pudo inicializar la base de datos:', err);
+    process.exit(1);
+  });

@@ -1,17 +1,15 @@
 const express = require('express');
-const db = require('../db');
+const { client } = require('../db');
 const { requireAuth } = require('../auth');
 
 const router = express.Router();
 
-router.get('/', requireAuth, (_req, res) => {
-  const matches = db
-    .prepare(
-      `SELECT group_name, home, away, home_score, away_score
-       FROM matches
-       WHERE phase = 'Grupos'`
-    )
-    .all();
+router.get('/', requireAuth, async (_req, res) => {
+  const { rows: matches } = await client.execute(
+    `SELECT group_name, home, away, home_score, away_score
+     FROM matches
+     WHERE phase = 'Grupos'`
+  );
 
   const groups = {};
 

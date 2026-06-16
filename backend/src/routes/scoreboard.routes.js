@@ -1,14 +1,14 @@
 const express = require('express');
-const db = require('../db');
+const { client } = require('../db');
 const { requireAuth } = require('../auth');
 const { calcScore } = require('../scoring');
 
 const router = express.Router();
 
-router.get('/', requireAuth, (_req, res) => {
-  const users = db.prepare("SELECT id, username, display_name FROM users WHERE role = 'player'").all();
-  const matches = db.prepare('SELECT id, home_score, away_score FROM matches').all();
-  const predictions = db.prepare('SELECT user_id, match_id, home_pred, away_pred FROM predictions').all();
+router.get('/', requireAuth, async (_req, res) => {
+  const { rows: users } = await client.execute("SELECT id, username, display_name FROM users WHERE role = 'player'");
+  const { rows: matches } = await client.execute('SELECT id, home_score, away_score FROM matches');
+  const { rows: predictions } = await client.execute('SELECT user_id, match_id, home_pred, away_pred FROM predictions');
 
   const predByUserMatch = {};
   for (const p of predictions) {
