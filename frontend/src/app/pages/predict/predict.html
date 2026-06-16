@@ -52,9 +52,19 @@
         }
       </div>
       <div class="teams">
-        <span>{{ flagFor(match.home) }} {{ match.home ?? 'Por definir' }}</span>
+        <span>
+          @if (flagUrl(match.home)) {
+            <img class="flag" [src]="flagUrl(match.home)" alt="" />
+          }
+          {{ match.home ?? 'Por definir' }}
+        </span>
         <span class="vs">vs</span>
-        <span>{{ match.away ?? 'Por definir' }} {{ flagFor(match.away) }}</span>
+        <span>
+          {{ match.away ?? 'Por definir' }}
+          @if (flagUrl(match.away)) {
+            <img class="flag" [src]="flagUrl(match.away)" alt="" />
+          }
+        </span>
       </div>
       <div class="inputs">
         <input

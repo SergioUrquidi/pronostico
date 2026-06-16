@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
-import { flagFor } from '../../core/flags';
+import { flagUrl } from '../../core/flags';
 import { Match } from '../../core/models';
 
 const PHASES = ['Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final'];
@@ -23,7 +23,7 @@ export class Admin {
   lockMinutes = signal(60);
   loading = signal(true);
   toast = signal('');
-  flagFor = flagFor;
+  flagUrl = flagUrl;
 
   groups = computed(() => {
     const set = new Set(

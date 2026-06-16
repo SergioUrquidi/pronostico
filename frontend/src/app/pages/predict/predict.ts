@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
-import { flagFor } from '../../core/flags';
+import { flagUrl } from '../../core/flags';
 import { Match, PredictionMap } from '../../core/models';
 
 const PHASES = ['Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final'];
@@ -80,7 +80,7 @@ export class Predict {
     this.loading.set(false);
   }
 
-  flagFor = flagFor;
+  flagUrl = flagUrl;
 
   draftFor(matchId: string): { home: string; away: string } {
     return this.draft()[matchId] ?? { home: '', away: '' };

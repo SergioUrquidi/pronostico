@@ -46,7 +46,12 @@
       <tbody>
         @for (r of rowsFor(selectedGroup()); track r.team) {
           <tr>
-            <td class="team-col">{{ flagFor(r.team) }} {{ r.team }}</td>
+            <td class="team-col">
+              @if (flagUrl(r.team)) {
+                <img class="flag" [src]="flagUrl(r.team)" alt="" />
+              }
+              {{ r.team }}
+            </td>
             <td>{{ r.pj }}</td>
             <td>{{ r.g }}</td>
             <td>{{ r.e }}</td>

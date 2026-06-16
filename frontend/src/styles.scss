@@ -76,3 +76,12 @@ a {
   letter-spacing: 1px;
   text-transform: uppercase;
 }
+
+.flag {
+  width: 20px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}

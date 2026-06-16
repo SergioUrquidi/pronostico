@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
-import { flagFor } from '../../core/flags';
+import { flagUrl } from '../../core/flags';
 import { ScoreboardEntry, StandingsByGroup } from '../../core/models';
 
 const MEDALS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'];
@@ -40,7 +40,7 @@ export class Scoreboard {
     this.loading.set(false);
   }
 
-  flagFor = flagFor;
+  flagUrl = flagUrl;
 
   rowsFor(group: string) {
     return this.standings()[group] ?? [];
