@@ -47,9 +47,9 @@
         </div>
       } @else {
         <div class="teams">
-          <span>{{ match.home }}</span>
+          <span>{{ flagFor(match.home) }} {{ match.home }}</span>
           <span class="vs">vs</span>
-          <span>{{ match.away }}</span>
+          <span>{{ match.away }} {{ flagFor(match.away) }}</span>
         </div>
 
         <div class="result-edit">

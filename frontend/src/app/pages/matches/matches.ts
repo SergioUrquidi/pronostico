@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
+import { flagFor } from '../../core/flags';
 import { Match } from '../../core/models';
 
 const PHASES = ['Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final'];
@@ -53,6 +54,8 @@ export class Matches {
     this.allPredictions.set(predictions);
     this.loading.set(false);
   }
+
+  flagFor = flagFor;
 
   predictionsFor(matchId: string) {
     return Object.values(this.allPredictions()[matchId] ?? {});

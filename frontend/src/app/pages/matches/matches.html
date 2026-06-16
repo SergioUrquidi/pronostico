@@ -31,9 +31,9 @@
         }
       </div>
       <div class="teams">
-        <span>{{ match.home ?? 'Por definir' }}</span>
+        <span>{{ flagFor(match.home) }} {{ match.home ?? 'Por definir' }}</span>
         <span class="vs">vs</span>
-        <span>{{ match.away ?? 'Por definir' }}</span>
+        <span>{{ match.away ?? 'Por definir' }} {{ flagFor(match.away) }}</span>
       </div>
 
       @if (match.locked) {
