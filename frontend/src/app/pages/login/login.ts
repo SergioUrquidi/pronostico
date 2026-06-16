@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -24,8 +25,12 @@ export class Login {
     try {
       const user = await this.auth.login(this.username().trim().toLowerCase(), this.password());
       this.router.navigate([user.mustChangePassword ? '/cambiar-clave' : '/tabla']);
-    } catch {
-      this.error.set('Usuario o clave incorrectos');
+    } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 401) {
+        this.error.set('Usuario o clave incorrectos');
+      } else {
+        this.error.set('El servidor está despertando (plan gratis), esperá 30 seg. y volvé a intentar');
+      }
     } finally {
       this.loading.set(false);
     }
