@@ -1,0 +1,57 @@
+<h2>Partidos y pronósticos</h2>
+<p class="tag">Los pronósticos de los demás se revelan cuando el partido se bloquea</p>
+
+<div class="tabs">
+  @for (phase of phases; track phase) {
+    <button class="tab" [class.active]="selectedPhase() === phase" (click)="selectedPhase.set(phase)">
+      {{ phase }}
+    </button>
+  }
+</div>
+
+@if (selectedPhase() === 'Grupos') {
+  <div class="tabs">
+    @for (g of groups(); track g) {
+      <button class="tab" [class.active]="selectedGroup() === g" (click)="selectedGroup.set(g)">
+        G-{{ g }}
+      </button>
+    }
+  </div>
+}
+
+@if (loading()) {
+  <p class="tag">Cargando...</p>
+} @else {
+  @for (match of visibleMatches(); track match.id) {
+    <div class="card match-card">
+      <div class="match-head">
+        <span class="tag">{{ match.stadium }} · {{ match.dateLocal }} {{ match.timeLocal }}</span>
+        @if (match.homeScore !== null) {
+          <span class="result">{{ match.homeScore }} – {{ match.awayScore }}</span>
+        }
+      </div>
+      <div class="teams">
+        <span>{{ match.home ?? 'Por definir' }}</span>
+        <span class="vs">vs</span>
+        <span>{{ match.away ?? 'Por definir' }}</span>
+      </div>
+
+      @if (match.locked) {
+        <div class="predictions-grid">
+          @for (p of predictionsFor(match.id); track p.displayName) {
+            <div class="pred">
+              <div class="tag">{{ p.displayName }}</div>
+              <div class="pred-score">{{ p.home }}–{{ p.away }}</div>
+            </div>
+          } @empty {
+            <span class="tag">Nadie pronosticó este partido</span>
+          }
+        </div>
+      } @else {
+        <div class="tag center">Se revela al cerrar el pronóstico</div>
+      }
+    </div>
+  } @empty {
+    <p class="tag">No hay partidos en esta fase todavía.</p>
+  }
+}

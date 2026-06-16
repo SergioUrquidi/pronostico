@@ -1,0 +1,66 @@
+@if (toast()) {
+  <div class="toast">{{ toast() }}</div>
+}
+
+<h2>⚙️ Panel de administrador</h2>
+
+<div class="card config-card">
+  <div class="tag">Minutos de bloqueo antes del partido (parametrizable)</div>
+  <div class="config-row">
+    <input class="input" type="number" min="0" [(ngModel)]="lockMinutes" name="lockMinutes" />
+    <button class="btn" (click)="saveLockMinutes()">Guardar</button>
+  </div>
+</div>
+
+<div class="tabs">
+  @for (phase of phases; track phase) {
+    <button class="tab" [class.active]="selectedPhase() === phase" (click)="selectedPhase.set(phase)">
+      {{ phase }}
+    </button>
+  }
+</div>
+
+@if (selectedPhase() === 'Grupos') {
+  <div class="tabs">
+    @for (g of groups(); track g) {
+      <button class="tab" [class.active]="selectedGroup() === g" (click)="selectedGroup.set(g)">
+        G-{{ g }}
+      </button>
+    }
+  </div>
+}
+
+@if (loading()) {
+  <p class="tag">Cargando...</p>
+} @else {
+  @for (match of visibleMatches(); track match.id) {
+    <div class="card match-card">
+      <div class="tag">{{ match.stadium }} · {{ match.dateLocal }} {{ match.timeLocal }}</div>
+
+      @if (match.home === null) {
+        <div class="teams-edit">
+          <input class="input" placeholder="Equipo local" #homeName />
+          <input class="input" placeholder="Equipo visitante" #awayName />
+          <button class="btn secondary" (click)="saveTeams(match, homeName.value, awayName.value)">
+            Definir equipos
+          </button>
+        </div>
+      } @else {
+        <div class="teams">
+          <span>{{ match.home }}</span>
+          <span class="vs">vs</span>
+          <span>{{ match.away }}</span>
+        </div>
+
+        <div class="result-edit">
+          <input class="input score" type="number" min="0" #homeScore [value]="match.homeScore ?? ''" />
+          <span>–</span>
+          <input class="input score" type="number" min="0" #awayScore [value]="match.awayScore ?? ''" />
+          <button class="btn" (click)="saveResult(match, homeScore.value, awayScore.value)">Guardar resultado</button>
+        </div>
+      }
+    </div>
+  } @empty {
+    <p class="tag">No hay partidos en esta fase.</p>
+  }
+}

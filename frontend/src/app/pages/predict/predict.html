@@ -1,0 +1,70 @@
+@if (toast()) {
+  <div class="toast">{{ toast() }}</div>
+}
+
+<h2>Tus pronósticos</h2>
+
+<div class="tabs">
+  @for (phase of phases; track phase) {
+    <button class="tab" [class.active]="selectedPhase() === phase" (click)="selectedPhase.set(phase)">
+      {{ phase }}
+    </button>
+  }
+</div>
+
+@if (selectedPhase() === 'Grupos') {
+  <div class="tabs">
+    @for (g of groups(); track g) {
+      <button class="tab" [class.active]="selectedGroup() === g" (click)="selectedGroup.set(g)">
+        G-{{ g }}
+      </button>
+    }
+  </div>
+}
+
+@if (loading()) {
+  <p class="tag">Cargando...</p>
+} @else {
+  @for (match of visibleMatches(); track match.id) {
+    <div class="card match-card" [class.locked]="match.locked">
+      <div class="match-head">
+        <span class="tag">{{ match.stadium }} · {{ match.dateLocal }} {{ match.timeLocal }}</span>
+        @if (match.locked) {
+          <span class="badge locked">🔒 Bloqueado</span>
+        }
+      </div>
+      <div class="teams">
+        <span>{{ match.home ?? 'Por definir' }}</span>
+        <span class="vs">vs</span>
+        <span>{{ match.away ?? 'Por definir' }}</span>
+      </div>
+      <div class="inputs">
+        <input
+          class="input score"
+          type="number"
+          min="0"
+          max="20"
+          [disabled]="match.locked"
+          [ngModel]="draftFor(match.id).home"
+          (ngModelChange)="setDraftHome(match.id, $event)"
+        />
+        <span>–</span>
+        <input
+          class="input score"
+          type="number"
+          min="0"
+          max="20"
+          [disabled]="match.locked"
+          [ngModel]="draftFor(match.id).away"
+          (ngModelChange)="setDraftAway(match.id, $event)"
+        />
+        <button class="btn" [disabled]="match.locked" (click)="save(match)">Guardar</button>
+      </div>
+      @if (match.homeScore !== null) {
+        <div class="tag real-result">Resultado real: {{ match.homeScore }} – {{ match.awayScore }}</div>
+      }
+    </div>
+  } @empty {
+    <p class="tag">No hay partidos en esta fase todavía.</p>
+  }
+}

@@ -1,0 +1,20 @@
+<h2>🏆 Tabla de posiciones</h2>
+<p class="tag">Actualizada en tiempo real</p>
+
+@if (loading()) {
+  <p class="tag">Cargando...</p>
+} @else {
+  @for (entry of board(); track entry.username; let i = $index) {
+    <div class="card row" [class.first]="i === 0">
+      <div class="medal">{{ i < medals.length ? medals[i] : (i + 1) }}</div>
+      <div class="info">
+        <div class="name">{{ entry.displayName }}</div>
+        <div class="tag">🎯 {{ entry.exact }} exactos (+4) · ✅ {{ entry.sign }} signo (+2)</div>
+      </div>
+      <div class="points">
+        <div class="number">{{ entry.points }}</div>
+        <div class="tag">puntos</div>
+      </div>
+    </div>
+  }
+}

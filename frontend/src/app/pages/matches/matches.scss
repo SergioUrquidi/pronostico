@@ -1,0 +1,81 @@
+h2 {
+  font-size: 18px;
+  margin: 0 0 4px;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin: 12px 0;
+  padding-bottom: 2px;
+}
+
+.tab {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  white-space: nowrap;
+
+  &.active {
+    background: var(--surface-2);
+    border-color: var(--accent);
+    color: var(--text);
+    font-weight: 700;
+  }
+}
+
+.match-card {
+  margin-bottom: 12px;
+}
+
+.match-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.result {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 700;
+  margin-bottom: 12px;
+
+  .vs {
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+}
+
+.predictions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.pred {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+.pred-score {
+  font-weight: 800;
+}
+
+.center {
+  text-align: center;
+}

@@ -1,0 +1,31 @@
+# Dependencias y build
+**/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Base de datos local (se siembra sola al arrancar el backend)
+backend/data/*.db
+backend/data/*.db-*
+
+# Secretos
+.env
+.env.local
+
+# Archivos personales / de configuracion del autor (no son parte del proyecto)
+CLAUDE.md
+MCP_INVENTARIO_SERGIONILO.md
+SKILLS_INVENTARIO_SERGIONILO.md
+/.claude/
+/.atl/
+/data/
+/logs/
+
+# Material de referencia ya procesado (el fixture real quedo en backend/src/data/fixture.json)
+*.xlsx
+~$*.xlsx
+mundial2026.tsx
+mundial2026.pdf
+
+# Editor / OS
+.DS_Store
+Thumbs.db

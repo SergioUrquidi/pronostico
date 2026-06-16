@@ -1,0 +1,89 @@
+h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+
+.config-card {
+  margin-bottom: 16px;
+}
+
+.config-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+
+  .input {
+    width: 100px;
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+  padding-bottom: 2px;
+}
+
+.tab {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  white-space: nowrap;
+
+  &.active {
+    background: var(--surface-2);
+    border-color: var(--accent);
+    color: var(--text);
+    font-weight: 700;
+  }
+}
+
+.match-card {
+  margin-bottom: 12px;
+}
+
+.teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 700;
+  margin: 10px 0;
+
+  .vs {
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+}
+
+.teams-edit,
+.result-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.score {
+  width: 56px;
+  text-align: center;
+}
+
+.toast {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #06140c;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: 700;
+  z-index: 999;
+}
