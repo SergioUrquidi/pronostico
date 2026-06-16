@@ -1,9 +1,13 @@
 <h2>🏆 Tabla de posiciones</h2>
-<p class="tag">Actualizada en tiempo real</p>
+
+<div class="tabs">
+  <button class="tab" [class.active]="view() === 'jugadores'" (click)="view.set('jugadores')">Jugadores</button>
+  <button class="tab" [class.active]="view() === 'grupos'" (click)="view.set('grupos')">Grupos (Mundial)</button>
+</div>
 
 @if (loading()) {
   <p class="tag">Cargando...</p>
-} @else {
+} @else if (view() === 'jugadores') {
   @for (entry of board(); track entry.username; let i = $index) {
     <div class="card row" [class.first]="i === 0">
       <div class="medal">{{ i < medals.length ? medals[i] : (i + 1) }}</div>
@@ -17,4 +21,45 @@
       </div>
     </div>
   }
+} @else {
+  <div class="tabs">
+    @for (g of groups; track g) {
+      <button class="tab" [class.active]="selectedGroup() === g" (click)="selectedGroup.set(g)">G-{{ g }}</button>
+    }
+  </div>
+
+  <div class="card">
+    <table class="standings">
+      <thead>
+        <tr>
+          <th class="team-col">Equipo</th>
+          <th>PJ</th>
+          <th>G</th>
+          <th>E</th>
+          <th>P</th>
+          <th>GF</th>
+          <th>GC</th>
+          <th>DG</th>
+          <th>Pts</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of rowsFor(selectedGroup()); track r.team) {
+          <tr>
+            <td class="team-col">{{ r.team }}</td>
+            <td>{{ r.pj }}</td>
+            <td>{{ r.g }}</td>
+            <td>{{ r.e }}</td>
+            <td>{{ r.p }}</td>
+            <td>{{ r.gf }}</td>
+            <td>{{ r.gc }}</td>
+            <td>{{ r.dg }}</td>
+            <td class="pts">{{ r.pts }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="9" class="tag">Sin partidos jugados en este grupo</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
 }

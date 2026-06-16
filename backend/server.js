@@ -7,6 +7,7 @@ const matchesRoutes = require('./src/routes/matches.routes');
 const predictionsRoutes = require('./src/routes/predictions.routes');
 const adminRoutes = require('./src/routes/admin.routes');
 const scoreboardRoutes = require('./src/routes/scoreboard.routes');
+const standingsRoutes = require('./src/routes/standings.routes');
 
 const app = express();
 app.use(cors());
@@ -19,6 +20,7 @@ app.use('/api/matches', matchesRoutes.router);
 app.use('/api/predictions', predictionsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/scoreboard', scoreboardRoutes);
+app.use('/api/standings', standingsRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

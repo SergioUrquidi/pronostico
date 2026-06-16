@@ -1,6 +1,63 @@
 h2 {
   font-size: 18px;
-  margin: 0 0 4px;
+  margin: 0 0 12px;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+  padding-bottom: 2px;
+}
+
+.tab {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  white-space: nowrap;
+
+  &.active {
+    background: var(--surface-2);
+    border-color: var(--accent);
+    color: var(--text);
+    font-weight: 700;
+  }
+}
+
+.standings {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    padding: 6px 4px;
+    text-align: center;
+  }
+
+  th {
+    color: var(--text-dim);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .team-col {
+    text-align: left;
+    font-weight: 700;
+  }
+
+  .pts {
+    font-weight: 900;
+    color: var(--accent);
+  }
+
+  tr:not(:last-child) td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
 }
 
 .row {

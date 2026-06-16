@@ -37,3 +37,17 @@ export interface ScoreboardEntry {
   exact: number;
   sign: number;
 }
+
+export interface StandingsRow {
+  team: string;
+  pj: number;
+  g: number;
+  e: number;
+  p: number;
+  gf: number;
+  gc: number;
+  dg: number;
+  pts: number;
+}
+
+export type StandingsByGroup = Record<string, StandingsRow[]>;

@@ -5,19 +5,32 @@
 <h2>Tus pronósticos</h2>
 
 <div class="tabs">
-  @for (phase of phases; track phase) {
-    <button class="tab" [class.active]="selectedPhase() === phase" (click)="selectedPhase.set(phase)">
-      {{ phase }}
-    </button>
-  }
+  <button class="tab" [class.active]="viewMode() === 'grupo'" (click)="viewMode.set('grupo')">Por grupo</button>
+  <button class="tab" [class.active]="viewMode() === 'fecha'" (click)="viewMode.set('fecha')">Por día (todos)</button>
 </div>
 
-@if (selectedPhase() === 'Grupos') {
+@if (viewMode() === 'grupo') {
   <div class="tabs">
-    @for (g of groups(); track g) {
-      <button class="tab" [class.active]="selectedGroup() === g" (click)="selectedGroup.set(g)">
-        G-{{ g }}
+    @for (phase of phases; track phase) {
+      <button class="tab" [class.active]="selectedPhase() === phase" (click)="selectedPhase.set(phase)">
+        {{ phase }}
       </button>
+    }
+  </div>
+
+  @if (selectedPhase() === 'Grupos') {
+    <div class="tabs">
+      @for (g of groups(); track g) {
+        <button class="tab" [class.active]="selectedGroup() === g" (click)="selectedGroup.set(g)">
+          G-{{ g }}
+        </button>
+      }
+    </div>
+  }
+} @else {
+  <div class="tabs">
+    @for (d of dates(); track d) {
+      <button class="tab" [class.active]="selectedDate() === d" (click)="selectedDate.set(d)">{{ d }}</button>
     }
   </div>
 }
@@ -28,7 +41,12 @@
   @for (match of visibleMatches(); track match.id) {
     <div class="card match-card" [class.locked]="match.locked">
       <div class="match-head">
-        <span class="tag">{{ match.stadium }} · {{ match.dateLocal }} {{ match.timeLocal }}</span>
+        <span class="tag">
+          @if (viewMode() === 'fecha') {
+            {{ match.group ? 'Grupo ' + match.group : match.phase }} ·
+          }
+          {{ match.stadium }} · {{ match.dateLocal }} {{ match.timeLocal }}
+        </span>
         @if (match.locked) {
           <span class="badge locked">🔒 Bloqueado</span>
         }

@@ -19,8 +19,10 @@ export class Predict {
   matches = signal<Match[]>([]);
   predictions = signal<PredictionMap>({});
   draft = signal<Record<string, { home: string; away: string }>>({});
+  viewMode = signal<'grupo' | 'fecha'>('grupo');
   selectedPhase = signal('Grupos');
   selectedGroup = signal('A');
+  selectedDate = signal('');
   loading = signal(true);
   toast = signal('');
 
@@ -33,11 +35,27 @@ export class Predict {
     return [...set].sort();
   });
 
+  dates = computed(() => {
+    const sorted = [...this.matches()].sort((a, b) => a.num - b.num);
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const m of sorted) {
+      if (m.dateLocal && !seen.has(m.dateLocal)) {
+        seen.add(m.dateLocal);
+        result.push(m.dateLocal);
+      }
+    }
+    return result;
+  });
+
   visibleMatches = computed(() => {
+    const all = [...this.matches()].sort((a, b) => a.num - b.num);
+    if (this.viewMode() === 'fecha') {
+      const date = this.selectedDate() || this.dates()[0];
+      return all.filter((m) => m.dateLocal === date);
+    }
     const phase = this.selectedPhase();
-    return this.matches()
-      .filter((m) => m.phase === phase && (phase !== 'Grupos' || m.group === this.selectedGroup()))
-      .sort((a, b) => a.num - b.num);
+    return all.filter((m) => m.phase === phase && (phase !== 'Grupos' || m.group === this.selectedGroup()));
   });
 
   constructor() {
@@ -57,6 +75,7 @@ export class Predict {
       draft[matchId] = { home: String(pred.home), away: String(pred.away) };
     }
     this.draft.set(draft);
+    if (this.dates().length) this.selectedDate.set(this.dates()[0]);
     this.loading.set(false);
   }
 

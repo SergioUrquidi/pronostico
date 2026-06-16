@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api-config';
-import { Match, PredictionMap, ScoreboardEntry } from './models';
+import { Match, PredictionMap, ScoreboardEntry, StandingsByGroup } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -28,6 +28,10 @@ export class ApiService {
 
   getScoreboard(): Observable<ScoreboardEntry[]> {
     return this.http.get<ScoreboardEntry[]>(`${API_BASE_URL}/scoreboard`);
+  }
+
+  getStandings(): Observable<StandingsByGroup> {
+    return this.http.get<StandingsByGroup>(`${API_BASE_URL}/standings`);
   }
 
   adminSetResult(matchId: string, home: number, away: number): Observable<{ ok: true }> {
