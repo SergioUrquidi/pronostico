@@ -1,0 +1,14 @@
+name: Mantener despierto el backend (Render free tier)
+
+on:
+  schedule:
+    # Cada 10 minutos, antes de que Render duerma la instancia por inactividad (15 min)
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping al backend
+        run: curl -sf -m 60 https://ronostico-api.onrender.com/health

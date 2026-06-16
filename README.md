@@ -37,6 +37,12 @@ Ver el esquema completo en [`BASE_DE_DATOS.md`](BASE_DE_DATOS.md) y la arquitect
 
 Todos deben cambiar la clave en el primer ingreso (la app fuerza la pantalla de cambio de clave, sin requisitos de complejidad — solo mínimo 4 caracteres, tal como se pidió).
 
+## El backend gratis "se duerme" — por qué y cómo se mitiga
+
+Render free tier apaga la instancia después de ~15 minutos sin pedidos, y el primer pedido después de eso tarda hasta 50 segundos en responder (o falla una vez con error de CORS/timeout, que es justo lo que nuestro propio cliente HTTP nunca llega a recibir bien armado). Para que esto casi no se note durante el mes del Mundial, `.github/workflows/keep-alive.yml` le hace un ping a `/health` cada 10 minutos, las 24 horas — gratis, usando GitHub Actions, sin servicios externos. No es 100% infalible (un ping puntual puede fallar), pero en la práctica evita que la instancia llegue a dormirse.
+
+Si en algún momento se quiere garantía total (cero cold-starts), la alternativa es pasar el Web Service de Render al plan **Starter** (~$7/mes) — sin pings, sin riesgo, pero con costo real.
+
 ## Cómo correrlo en local
 
 ### Backend
