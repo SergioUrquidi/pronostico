@@ -123,6 +123,12 @@
         <div class="tag">Avance predicho: <strong>{{ draftFor(match.id).advance === 'home' ? match.home : match.away }}</strong></div>
       }
 
+      @if (predictions()[match.id] !== undefined) {
+        <div class="saved-indicator">
+          ✓ Guardado: <strong>{{ predictions()[match.id].home }} – {{ predictions()[match.id].away }}</strong>
+        </div>
+      }
+
       @if (match.homeScore !== null) {
         <div class="tag real-result">Resultado real: {{ match.homeScore }} – {{ match.awayScore }}</div>
       }

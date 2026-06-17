@@ -11,8 +11,16 @@ const adminRoutes = require('./src/routes/admin.routes');
 const scoreboardRoutes = require('./src/routes/scoreboard.routes');
 const standingsRoutes = require('./src/routes/standings.routes');
 
+const corsOptions = {
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false,
+};
+
 const app = express();
-app.use(cors());
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
@@ -24,7 +32,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/scoreboard', scoreboardRoutes);
 app.use('/api/standings', standingsRoutes);
 
-app.use((err, _req, res, _next) => {
+app.use((err, req, res, _next) => {
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   console.error(err);
   res.status(500).json({ error: 'Error interno del servidor' });
 });
