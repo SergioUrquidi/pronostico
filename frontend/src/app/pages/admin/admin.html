@@ -111,6 +111,46 @@
             }
           </div>
         }
+
+        <!-- Pronósticos editables por jugador -->
+        <div class="pred-section">
+          <button type="button" class="btn-toggle-pred" (click)="togglePredictions(match.id)">
+            {{ expandedMatch() === match.id ? '▲ Ocultar pronósticos' : '▼ Ver/editar pronósticos' }}
+          </button>
+
+          @if (expandedMatch() === match.id) {
+            <div class="pred-table">
+              @for (p of predictionsFor(match.id); track p.username) {
+                <div class="pred-row">
+                  <span class="pred-name">{{ p.displayName }}</span>
+                  <input
+                    class="input score-sm"
+                    type="number" min="0" max="20"
+                    placeholder="0"
+                    [title]="p.displayName + ' - local'"
+                    [value]="predDraftFor(match.id, p.username).home"
+                    (input)="setPredDraftHome(match.id, p.username, $any($event.target).value)"
+                  />
+                  <span>–</span>
+                  <input
+                    class="input score-sm"
+                    type="number" min="0" max="20"
+                    placeholder="0"
+                    [title]="p.displayName + ' - visitante'"
+                    [value]="predDraftFor(match.id, p.username).away"
+                    (input)="setPredDraftAway(match.id, p.username, $any($event.target).value)"
+                  />
+                  <button type="button" class="btn btn-sm" (click)="savePlayerPrediction(match.id, p.username)">
+                    Guardar
+                  </button>
+                  @if (p.home === null) {
+                    <span class="tag no-pred">sin pronóstico</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
       }
     </div>
   } @empty {

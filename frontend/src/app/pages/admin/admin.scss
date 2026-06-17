@@ -83,6 +83,62 @@ h2 {
   margin-top: 6px;
 }
 
+.pred-section {
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.btn-toggle-pred {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+.pred-table {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pred-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pred-name {
+  font-size: 13px;
+  font-weight: 700;
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.score-sm {
+  width: 48px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 4px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.no-pred {
+  font-size: 10px;
+  font-style: italic;
+}
+
 .advance-winner {
   margin-top: 10px;
   display: flex;

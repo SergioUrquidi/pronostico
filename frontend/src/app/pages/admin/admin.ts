@@ -129,6 +129,70 @@ export class Admin {
     }
   }
 
+  // Predictions editor per match
+  expandedMatch = signal<string | null>(null);
+  matchPredictions = signal<Record<string, { username: string; displayName: string; home: number | null; away: number | null; advance: string | null }[]>>({});
+  predDraft = signal<Record<string, { home: string; away: string }>>({});
+
+  async togglePredictions(matchId: string): Promise<void> {
+    if (this.expandedMatch() === matchId) {
+      this.expandedMatch.set(null);
+      return;
+    }
+    this.expandedMatch.set(matchId);
+    if (this.matchPredictions()[matchId]) return; // already loaded
+    try {
+      const preds = await firstValueFrom(this.api.adminGetMatchPredictions(matchId));
+      this.matchPredictions.update((mp) => ({ ...mp, [matchId]: preds }));
+      const draft: Record<string, { home: string; away: string }> = {};
+      for (const p of preds) {
+        draft[`${matchId}_${p.username}`] = {
+          home: p.home !== null ? String(p.home) : '',
+          away: p.away !== null ? String(p.away) : '',
+        };
+      }
+      this.predDraft.update((d) => ({ ...d, ...draft }));
+    } catch {
+      this.showToast('No se pudo cargar los pronósticos');
+    }
+  }
+
+  predDraftFor(matchId: string, username: string): { home: string; away: string } {
+    return this.predDraft()[`${matchId}_${username}`] ?? { home: '', away: '' };
+  }
+
+  setPredDraftHome(matchId: string, username: string, value: string): void {
+    const key = `${matchId}_${username}`;
+    this.predDraft.update((d) => ({ ...d, [key]: { ...d[key] ?? { home: '', away: '' }, home: value } }));
+  }
+
+  setPredDraftAway(matchId: string, username: string, value: string): void {
+    const key = `${matchId}_${username}`;
+    this.predDraft.update((d) => ({ ...d, [key]: { ...d[key] ?? { home: '', away: '' }, away: value } }));
+  }
+
+  async savePlayerPrediction(matchId: string, username: string): Promise<void> {
+    const d = this.predDraftFor(matchId, username);
+    if (d.home === '' || d.away === '') { this.showToast('Completá ambos goles'); return; }
+    try {
+      await firstValueFrom(this.api.adminSetPrediction(matchId, username, Number(d.home), Number(d.away)));
+      // Update local cache
+      this.matchPredictions.update((mp) => ({
+        ...mp,
+        [matchId]: (mp[matchId] ?? []).map((p) =>
+          p.username === username ? { ...p, home: Number(d.home), away: Number(d.away) } : p
+        ),
+      }));
+      this.showToast(`Pronóstico de ${username} guardado ✓`);
+    } catch {
+      this.showToast('Error al guardar el pronóstico');
+    }
+  }
+
+  predictionsFor(matchId: string) {
+    return this.matchPredictions()[matchId] ?? [];
+  }
+
   seedLoading = signal(false);
 
   async seedHistorical(): Promise<void> {

@@ -65,4 +65,18 @@ export class ApiService {
   adminSeedHistorical(): Observable<{ ok: true; message: string }> {
     return this.http.post<{ ok: true; message: string }>(`${API_BASE_URL}/admin/seed-historical`, {});
   }
+
+  adminGetMatchPredictions(matchId: string): Observable<{ username: string; displayName: string; home: number | null; away: number | null; advance: string | null }[]> {
+    return this.http.get<{ username: string; displayName: string; home: number | null; away: number | null; advance: string | null }[]>(
+      `${API_BASE_URL}/admin/predictions/match/${matchId}`
+    );
+  }
+
+  adminSetPrediction(matchId: string, username: string, home: number, away: number, advance?: string | null): Observable<{ ok: true }> {
+    return this.http.put<{ ok: true }>(`${API_BASE_URL}/admin/predictions/${matchId}/${username}`, {
+      home,
+      away,
+      advance: advance ?? null,
+    });
+  }
 }

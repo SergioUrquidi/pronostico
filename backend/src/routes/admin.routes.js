@@ -111,6 +111,28 @@ router.put('/config', async (req, res) => {
   res.json({ ok: true });
 });
 
+// Get all player predictions for a specific match (admin only)
+router.get('/predictions/match/:matchId', async (req, res) => {
+  const { matchId } = req.params;
+  const { rows } = await client.execute({
+    sql: `SELECT u.username, u.display_name, p.home_pred, p.away_pred, p.advance_pred
+          FROM users u
+          LEFT JOIN predictions p ON p.user_id = u.id AND p.match_id = ?
+          WHERE u.role = 'player'
+          ORDER BY u.display_name`,
+    args: [matchId],
+  });
+  res.json(
+    rows.map((r) => ({
+      username: r.username,
+      displayName: r.display_name,
+      home: r.home_pred ?? null,
+      away: r.away_pred ?? null,
+      advance: r.advance_pred ?? null,
+    }))
+  );
+});
+
 // One-time historical data seed — clears the guard key first so it always re-runs
 router.post('/seed-historical', async (_req, res) => {
   try {
