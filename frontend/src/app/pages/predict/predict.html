@@ -74,7 +74,7 @@
           type="number"
           min="0"
           max="20"
-          [disabled]="match.locked"
+          [disabled]="isMatchSealedForBetting(match)"
           [ngModel]="draftFor(match.id).home"
           (ngModelChange)="setDraftHome(match.id, $event)"
         />
@@ -84,11 +84,11 @@
           type="number"
           min="0"
           max="20"
-          [disabled]="match.locked"
+          [disabled]="isMatchSealedForBetting(match)"
           [ngModel]="draftFor(match.id).away"
           (ngModelChange)="setDraftAway(match.id, $event)"
         />
-        <button type="button" class="btn" [disabled]="match.locked" (click)="save(match)">Guardar</button>
+        <button type="button" class="btn" [disabled]="isMatchSealedForBetting(match)" (click)="save(match)">Guardar</button>
       </div>
 
       @if (isKnockout(match.phase) && !match.locked) {
@@ -99,7 +99,7 @@
               type="button"
               class="btn-advance"
               [class.selected]="draftFor(match.id).advance === 'home'"
-              [disabled]="match.locked"
+              [disabled]="isMatchSealedForBetting(match)"
               (click)="setDraftAdvance(match.id, draftFor(match.id).advance === 'home' ? '' : 'home')"
             >
               @if (flagUrl(match.home)) { <img class="flag-sm" [src]="flagUrl(match.home)" alt="" /> }
@@ -109,7 +109,7 @@
               type="button"
               class="btn-advance"
               [class.selected]="draftFor(match.id).advance === 'away'"
-              [disabled]="match.locked"
+              [disabled]="isMatchSealedForBetting(match)"
               (click)="setDraftAdvance(match.id, draftFor(match.id).advance === 'away' ? '' : 'away')"
             >
               @if (flagUrl(match.away)) { <img class="flag-sm" [src]="flagUrl(match.away)" alt="" /> }

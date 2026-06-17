@@ -61,6 +61,11 @@ a {
   border: 1px solid var(--border);
 }
 
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .input {
   background: var(--surface-2);
   border: 1px solid var(--border);

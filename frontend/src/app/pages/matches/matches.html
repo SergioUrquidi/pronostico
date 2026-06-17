@@ -48,7 +48,7 @@
         </span>
       </div>
 
-      @if (match.locked) {
+      @if (isPredictionVisible(match)) {
         <div class="predictions-grid">
           @for (p of predictionsFor(match.id); track p.displayName) {
             <div class="pred">

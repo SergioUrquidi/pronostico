@@ -111,6 +111,12 @@ export class Predict {
 
   flagUrl = flagUrl;
 
+  isMatchSealedForBetting(match: Match): boolean {
+    if (match.locked) return true;
+    const kickoff = new Date(match.kickoffAtUtc).getTime();
+    return Date.now() >= kickoff - 60 * 60 * 1000;
+  }
+
   draftFor(matchId: string): { home: string; away: string; advance: string } {
     return this.draft()[matchId] ?? { home: '', away: '', advance: '' };
   }

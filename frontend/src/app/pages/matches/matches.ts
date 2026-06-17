@@ -64,6 +64,12 @@ export class Matches {
 
   flagUrl = flagUrl;
 
+  isPredictionVisible(match: Match): boolean {
+    if (match.locked) return true;
+    const kickoff = new Date(match.kickoffAtUtc).getTime();
+    return Date.now() >= kickoff;
+  }
+
   predictionsFor(matchId: string) {
     return Object.values(this.allPredictions()[matchId] ?? {});
   }
