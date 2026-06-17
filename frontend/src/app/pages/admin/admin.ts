@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { flagUrl } from '../../core/flags';
-import { Match } from '../../core/models';
+import { KNOCKOUT_PHASES, Match } from '../../core/models';
 
 const PHASES = ['Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final'];
 
@@ -22,8 +22,13 @@ export class Admin {
   selectedGroup = signal('A');
   lockMinutes = signal(60);
   loading = signal(true);
+  error = signal('');
   toast = signal('');
   flagUrl = flagUrl;
+  /** advance winner draft per match id: '' | 'home' | 'away' */
+  advDraft = signal<Record<string, string>>({});
+
+  isKnockout = (phase: string) => KNOCKOUT_PHASES.has(phase);
 
   groups = computed(() => {
     const set = new Set(
@@ -47,40 +52,85 @@ export class Admin {
 
   private async load(): Promise<void> {
     this.loading.set(true);
-    const [matches, config] = await Promise.all([
-      firstValueFrom(this.api.getMatches()),
-      firstValueFrom(this.api.adminGetConfig()),
-    ]);
-    this.matches.set(matches);
-    this.lockMinutes.set(config.lockMinutesBeforeKickoff);
-    this.loading.set(false);
+    this.error.set('');
+    try {
+      const [matches, config] = await Promise.all([
+        firstValueFrom(this.api.getMatches()),
+        firstValueFrom(this.api.adminGetConfig()),
+      ]);
+      this.matches.set(matches);
+      this.lockMinutes.set(config.lockMinutesBeforeKickoff);
+      // Prefill advance draft from existing data
+      const draft: Record<string, string> = {};
+      for (const m of matches) {
+        if (KNOCKOUT_PHASES.has(m.phase)) draft[m.id] = m.advanceWinner ?? '';
+      }
+      this.advDraft.set(draft);
+    } catch {
+      this.error.set('No se pudo cargar los datos. Intentá de nuevo.');
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   async saveTeams(match: Match, home: string, away: string): Promise<void> {
     if (!home.trim() || !away.trim()) return;
-    await firstValueFrom(this.api.adminSetTeams(match.id, home.trim(), away.trim()));
-    this.matches.update((all) =>
-      all.map((m) => (m.id === match.id ? { ...m, home: home.trim().toUpperCase(), away: away.trim().toUpperCase() } : m))
-    );
-    this.showToast('Equipos actualizados');
+    try {
+      await firstValueFrom(this.api.adminSetTeams(match.id, home.trim(), away.trim()));
+      this.matches.update((all) =>
+        all.map((m) => (m.id === match.id ? { ...m, home: home.trim().toUpperCase(), away: away.trim().toUpperCase() } : m))
+      );
+      this.showToast('Equipos actualizados ✓');
+    } catch {
+      this.showToast('Error al guardar equipos');
+    }
+  }
+
+  advDraftFor(matchId: string): string {
+    return this.advDraft()[matchId] ?? '';
+  }
+
+  setAdvDraft(matchId: string, value: string): void {
+    this.advDraft.update((d) => ({ ...d, [matchId]: value }));
   }
 
   async saveResult(match: Match, home: string, away: string): Promise<void> {
     if (home === '' || away === '') return;
-    await firstValueFrom(this.api.adminSetResult(match.id, Number(home), Number(away)));
-    this.matches.update((all) =>
-      all.map((m) => (m.id === match.id ? { ...m, homeScore: Number(home), awayScore: Number(away) } : m))
-    );
-    this.showToast('Resultado guardado');
+    const homeN = Number(home);
+    const awayN = Number(away);
+    const advanceWinner = this.advDraftFor(match.id);
+    // Require advance_winner for knockout draws (penalties)
+    if (KNOCKOUT_PHASES.has(match.phase) && homeN === awayN && !advanceWinner) {
+      this.showToast('Empate en knockout: indicá quién avanzó (penales)');
+      return;
+    }
+    try {
+      const aw = advanceWinner === 'home' || advanceWinner === 'away' ? advanceWinner : null;
+      await firstValueFrom(this.api.adminSetResult(match.id, homeN, awayN, aw));
+      this.matches.update((all) =>
+        all.map((m) =>
+          m.id === match.id
+            ? { ...m, homeScore: homeN, awayScore: awayN, advanceWinner: aw as 'home' | 'away' | null }
+            : m
+        )
+      );
+      this.showToast('Resultado guardado ✓');
+    } catch {
+      this.showToast('Error al guardar resultado');
+    }
   }
 
   async saveLockMinutes(): Promise<void> {
-    await firstValueFrom(this.api.adminSetConfig(this.lockMinutes()));
-    this.showToast('Configuración de bloqueo actualizada');
+    try {
+      await firstValueFrom(this.api.adminSetConfig(this.lockMinutes()));
+      this.showToast('Configuración actualizada ✓');
+    } catch {
+      this.showToast('Error al guardar configuración');
+    }
   }
 
   private showToast(msg: string): void {
     this.toast.set(msg);
-    setTimeout(() => this.toast.set(''), 2200);
+    setTimeout(() => this.toast.set(''), 2500);
   }
 }

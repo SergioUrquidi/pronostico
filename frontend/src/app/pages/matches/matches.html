@@ -21,6 +21,8 @@
 
 @if (loading()) {
   <p class="tag">Cargando...</p>
+} @else if (error()) {
+  <p class="tag error">{{ error() }}</p>
 } @else {
   @for (match of visibleMatches(); track match.id) {
     <div class="card match-card">

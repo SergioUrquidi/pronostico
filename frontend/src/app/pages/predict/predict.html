@@ -5,14 +5,14 @@
 <h2>Tus pronósticos</h2>
 
 <div class="tabs">
-  <button class="tab" [class.active]="viewMode() === 'grupo'" (click)="viewMode.set('grupo')">Por grupo</button>
-  <button class="tab" [class.active]="viewMode() === 'fecha'" (click)="viewMode.set('fecha')">Por día (todos)</button>
+  <button type="button" class="tab" [class.active]="viewMode() === 'grupo'" (click)="viewMode.set('grupo')">Por grupo</button>
+  <button type="button" class="tab" [class.active]="viewMode() === 'fecha'" (click)="viewMode.set('fecha')">Por día (todos)</button>
 </div>
 
 @if (viewMode() === 'grupo') {
   <div class="tabs">
     @for (phase of phases; track phase) {
-      <button class="tab" [class.active]="selectedPhase() === phase" (click)="selectedPhase.set(phase)">
+      <button type="button" class="tab" [class.active]="selectedPhase() === phase" (click)="selectedPhase.set(phase)">
         {{ phase }}
       </button>
     }
@@ -21,7 +21,7 @@
   @if (selectedPhase() === 'Grupos') {
     <div class="tabs">
       @for (g of groups(); track g) {
-        <button class="tab" [class.active]="selectedGroup() === g" (click)="selectedGroup.set(g)">
+        <button type="button" class="tab" [class.active]="selectedGroup() === g" (click)="selectedGroup.set(g)">
           G-{{ g }}
         </button>
       }
@@ -30,13 +30,15 @@
 } @else {
   <div class="tabs">
     @for (d of dates(); track d) {
-      <button class="tab" [class.active]="selectedDate() === d" (click)="selectedDate.set(d)">{{ d }}</button>
+      <button type="button" class="tab" [class.active]="selectedDate() === d" (click)="selectedDate.set(d)">{{ d }}</button>
     }
   </div>
 }
 
 @if (loading()) {
   <p class="tag">Cargando...</p>
+} @else if (error()) {
+  <p class="tag error">{{ error() }}</p>
 } @else {
   @for (match of visibleMatches(); track match.id) {
     <div class="card match-card" [class.locked]="match.locked">
@@ -86,13 +88,79 @@
           [ngModel]="draftFor(match.id).away"
           (ngModelChange)="setDraftAway(match.id, $event)"
         />
-        <button class="btn" [disabled]="match.locked" (click)="save(match)">Guardar</button>
+        <button type="button" class="btn" [disabled]="match.locked" (click)="save(match)">Guardar</button>
       </div>
+
+      @if (isKnockout(match.phase) && !match.locked) {
+        <div class="advance-pred">
+          <span class="tag">¿Quién avanza? (+1 pt)</span>
+          <div class="advance-btns">
+            <button
+              type="button"
+              class="btn-advance"
+              [class.selected]="draftFor(match.id).advance === 'home'"
+              [disabled]="match.locked"
+              (click)="setDraftAdvance(match.id, draftFor(match.id).advance === 'home' ? '' : 'home')"
+            >
+              @if (flagUrl(match.home)) { <img class="flag-sm" [src]="flagUrl(match.home)" alt="" /> }
+              {{ match.home ?? 'Local' }}
+            </button>
+            <button
+              type="button"
+              class="btn-advance"
+              [class.selected]="draftFor(match.id).advance === 'away'"
+              [disabled]="match.locked"
+              (click)="setDraftAdvance(match.id, draftFor(match.id).advance === 'away' ? '' : 'away')"
+            >
+              @if (flagUrl(match.away)) { <img class="flag-sm" [src]="flagUrl(match.away)" alt="" /> }
+              {{ match.away ?? 'Visitante' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (isKnockout(match.phase) && match.locked && draftFor(match.id).advance) {
+        <div class="tag">Avance predicho: <strong>{{ draftFor(match.id).advance === 'home' ? match.home : match.away }}</strong></div>
+      }
+
       @if (match.homeScore !== null) {
         <div class="tag real-result">Resultado real: {{ match.homeScore }} – {{ match.awayScore }}</div>
       }
     </div>
   } @empty {
     <p class="tag">No hay partidos en esta fase todavía.</p>
+  }
+
+  @if (viewMode() === 'grupo' && selectedPhase() === 'Grupos' && teamsInGroup().length > 0) {
+    <div class="card group-advance-card">
+      <div class="group-advance-title">
+        ⬆️ ¿Qué equipos avanzan del Grupo {{ selectedGroup() }}?
+        <span class="tag"> (+1 pt por equipo correcto)</span>
+      </div>
+      <div class="advance-team-grid">
+        @for (team of teamsInGroup(); track team) {
+          <button
+            type="button"
+            class="btn-advance"
+            [class.selected]="groupAdvanceFor(selectedGroup()).includes(team)"
+            (click)="toggleGroupAdvanceTeam(selectedGroup(), team)"
+          >
+            @if (flagUrl(team)) { <img class="flag-sm" [src]="flagUrl(team)" alt="" /> }
+            {{ team }}
+          </button>
+        }
+      </div>
+      <div class="tag">
+        Seleccionados: {{ groupAdvanceFor(selectedGroup()).join(', ') || '—' }}
+      </div>
+      <button
+        type="button"
+        class="btn"
+        [disabled]="groupAdvanceFor(selectedGroup()).length !== 2"
+        (click)="saveGroupAdvance(selectedGroup())"
+      >
+        Guardar avance del grupo
+      </button>
+    </div>
   }
 }

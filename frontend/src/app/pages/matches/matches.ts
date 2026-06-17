@@ -23,6 +23,7 @@ export class Matches {
   selectedPhase = signal('Grupos');
   selectedGroup = signal('A');
   loading = signal(true);
+  error = signal('');
 
   groups = computed(() => {
     const set = new Set(
@@ -46,13 +47,19 @@ export class Matches {
 
   private async load(): Promise<void> {
     this.loading.set(true);
-    const [matches, predictions] = await Promise.all([
-      firstValueFrom(this.api.getMatches()),
-      firstValueFrom(this.api.getAllPredictions()),
-    ]);
-    this.matches.set(matches);
-    this.allPredictions.set(predictions);
-    this.loading.set(false);
+    this.error.set('');
+    try {
+      const [matches, predictions] = await Promise.all([
+        firstValueFrom(this.api.getMatches()),
+        firstValueFrom(this.api.getAllPredictions()),
+      ]);
+      this.matches.set(matches);
+      this.allPredictions.set(predictions);
+    } catch {
+      this.error.set('No se pudo cargar los partidos. Intentá de nuevo.');
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   flagUrl = flagUrl;

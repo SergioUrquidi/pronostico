@@ -35,7 +35,8 @@ async function initDb() {
       time_local TEXT,
       kickoff_at_utc TEXT NOT NULL,
       home_score INTEGER,
-      away_score INTEGER
+      away_score INTEGER,
+      advance_winner TEXT
     );
 
     CREATE TABLE IF NOT EXISTS predictions (
@@ -44,10 +45,21 @@ async function initDb() {
       match_id TEXT NOT NULL REFERENCES matches(id),
       home_pred INTEGER NOT NULL,
       away_pred INTEGER NOT NULL,
+      advance_pred TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       UNIQUE(user_id, match_id)
     );
+
+    CREATE TABLE IF NOT EXISTS group_advance_preds (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      group_name TEXT NOT NULL,
+      team TEXT NOT NULL,
+      UNIQUE(user_id, group_name, team)
+    );
   `);
+
+  await runMigrations();
 
   const userCount = (await client.execute('SELECT COUNT(*) AS n FROM users')).rows[0].n;
   if (userCount === 0) {
@@ -90,6 +102,20 @@ async function initDb() {
       sql: 'INSERT INTO config (key, value) VALUES (?, ?)',
       args: ['lock_minutes_before_kickoff', '60'],
     });
+  }
+}
+
+async function runMigrations() {
+  const alterations = [
+    'ALTER TABLE predictions ADD COLUMN advance_pred TEXT',
+    'ALTER TABLE matches ADD COLUMN advance_winner TEXT',
+  ];
+  for (const sql of alterations) {
+    try {
+      await client.execute(sql);
+    } catch (_) {
+      // Column already exists — safe to ignore
+    }
   }
 }
 

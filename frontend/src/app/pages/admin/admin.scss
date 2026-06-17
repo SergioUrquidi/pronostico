@@ -75,6 +75,22 @@ h2 {
   text-align: center;
 }
 
+.advance-winner {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.select-advance {
+  width: 100%;
+}
+
+.result-current {
+  margin-top: 8px;
+  text-align: center;
+}
+
 .toast {
   position: fixed;
   top: 16px;

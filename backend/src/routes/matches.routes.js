@@ -39,6 +39,7 @@ router.get('/', requireAuth, async (req, res) => {
         kickoffAtUtc: m.kickoff_at_utc,
         homeScore: m.home_score,
         awayScore: m.away_score,
+        advanceWinner: m.advance_winner ?? null,
         locked: now >= lockAt,
       };
     })

@@ -21,6 +21,7 @@ export class Scoreboard {
   standings = signal<StandingsByGroup>({});
   selectedGroup = signal('A');
   loading = signal(true);
+  error = signal('');
   medals = MEDALS;
 
   groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
@@ -31,13 +32,19 @@ export class Scoreboard {
 
   private async load(): Promise<void> {
     this.loading.set(true);
-    const [board, standings] = await Promise.all([
-      firstValueFrom(this.api.getScoreboard()),
-      firstValueFrom(this.api.getStandings()),
-    ]);
-    this.board.set(board);
-    this.standings.set(standings);
-    this.loading.set(false);
+    this.error.set('');
+    try {
+      const [board, standings] = await Promise.all([
+        firstValueFrom(this.api.getScoreboard()),
+        firstValueFrom(this.api.getStandings()),
+      ]);
+      this.board.set(board);
+      this.standings.set(standings);
+    } catch {
+      this.error.set('No se pudo cargar la tabla. Intentá de nuevo.');
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   flagUrl = flagUrl;

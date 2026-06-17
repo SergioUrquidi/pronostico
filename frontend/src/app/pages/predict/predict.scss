@@ -81,6 +81,65 @@ h2 {
   margin-top: 8px;
 }
 
+.advance-pred {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.advance-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.btn-advance {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #06140c;
+    font-weight: 700;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.flag-sm {
+  width: 18px;
+  height: auto;
+}
+
+.group-advance-card {
+  margin-top: 16px;
+  border: 1px solid var(--accent);
+}
+
+.group-advance-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.advance-team-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
 .toast {
   position: fixed;
   top: 16px;
