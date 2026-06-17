@@ -129,6 +129,22 @@ export class Admin {
     }
   }
 
+  seedLoading = signal(false);
+
+  async seedHistorical(): Promise<void> {
+    if (!confirm('¿Importar datos históricos de la planilla? Esto sobreescribirá los resultados y pronósticos existentes.')) return;
+    this.seedLoading.set(true);
+    try {
+      const res = await firstValueFrom(this.api.adminSeedHistorical());
+      this.showToast(res.message);
+      await this.load();
+    } catch {
+      this.showToast('Error al importar datos históricos');
+    } finally {
+      this.seedLoading.set(false);
+    }
+  }
+
   private showToast(msg: string): void {
     this.toast.set(msg);
     setTimeout(() => this.toast.set(''), 2500);

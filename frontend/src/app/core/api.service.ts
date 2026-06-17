@@ -61,4 +61,8 @@ export class ApiService {
   adminSetConfig(lockMinutesBeforeKickoff: number): Observable<{ ok: true }> {
     return this.http.put<{ ok: true }>(`${API_BASE_URL}/admin/config`, { lockMinutesBeforeKickoff });
   }
+
+  adminSeedHistorical(): Observable<{ ok: true; message: string }> {
+    return this.http.post<{ ok: true; message: string }>(`${API_BASE_URL}/admin/seed-historical`, {});
+  }
 }

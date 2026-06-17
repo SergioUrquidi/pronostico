@@ -12,6 +12,16 @@
   </div>
 </div>
 
+<div class="card config-card seed-card">
+  <div class="tag">Importar datos históricos de la planilla física (resultados + pronósticos)</div>
+  <div class="config-row">
+    <button type="button" class="btn secondary" [disabled]="seedLoading()" (click)="seedHistorical()">
+      {{ seedLoading() ? 'Importando...' : '📥 Importar datos históricos' }}
+    </button>
+  </div>
+  <div class="tag seed-hint">Esto carga los 19 resultados y todos los pronósticos registrados hasta ahora.</div>
+</div>
+
 <div class="tabs">
   @for (phase of phases; track phase) {
     <button type="button" class="tab" [class.active]="selectedPhase() === phase" (click)="selectedPhase.set(phase)">
@@ -65,9 +75,11 @@
         </div>
 
         <div class="result-edit">
-          <input class="input score" type="number" min="0" #homeScore [value]="match.homeScore ?? ''" />
+          <input class="input score" type="number" min="0" #homeScore [value]="match.homeScore ?? ''"
+                 [attr.aria-label]="'Goles ' + match.home" [title]="'Goles ' + match.home" placeholder="0" />
           <span>–</span>
-          <input class="input score" type="number" min="0" #awayScore [value]="match.awayScore ?? ''" />
+          <input class="input score" type="number" min="0" #awayScore [value]="match.awayScore ?? ''"
+                 [attr.aria-label]="'Goles ' + match.away" [title]="'Goles ' + match.away" placeholder="0" />
           <button type="button" class="btn" (click)="saveResult(match, homeScore.value, awayScore.value)">
             Guardar resultado
           </button>
@@ -79,6 +91,7 @@
             <select
               class="input select-advance"
               [id]="'adv-' + match.id"
+              [title]="'Quién avanzó en ' + match.home + ' vs ' + match.away"
               [ngModel]="advDraftFor(match.id)"
               (ngModelChange)="setAdvDraft(match.id, $event)"
               name="{{ 'adv-' + match.id }}"

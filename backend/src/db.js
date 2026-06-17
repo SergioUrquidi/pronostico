@@ -1,5 +1,6 @@
 const { createClient } = require('@libsql/client');
 const bcrypt = require('bcryptjs');
+const { seedHistoricalData } = require('./seed-historical');
 
 const client = createClient({
   url: process.env.TURSO_DATABASE_URL,
@@ -60,6 +61,7 @@ async function initDb() {
   `);
 
   await runMigrations();
+  await seedHistoricalData(client);
 
   const userCount = (await client.execute('SELECT COUNT(*) AS n FROM users')).rows[0].n;
   if (userCount === 0) {

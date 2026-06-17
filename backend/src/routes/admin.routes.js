@@ -1,6 +1,7 @@
 const express = require('express');
 const { client } = require('../db');
 const { requireAuth, requireAdmin } = require('../auth');
+const { seedHistoricalData } = require('../seed-historical');
 
 const router = express.Router();
 router.use(requireAuth, requireAdmin);
@@ -108,6 +109,18 @@ router.put('/config', async (req, res) => {
     args: [String(n)],
   });
   res.json({ ok: true });
+});
+
+// One-time historical data seed — clears the guard key first so it always re-runs
+router.post('/seed-historical', async (_req, res) => {
+  try {
+    await client.execute("DELETE FROM config WHERE key = 'historical_seed_v1'");
+    await seedHistoricalData(client);
+    res.json({ ok: true, message: 'Datos historicos importados correctamente' });
+  } catch (err) {
+    console.error('Seed error:', err);
+    res.status(500).json({ error: String(err.message) });
+  }
 });
 
 module.exports = router;

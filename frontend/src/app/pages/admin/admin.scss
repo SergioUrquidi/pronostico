@@ -75,6 +75,14 @@ h2 {
   text-align: center;
 }
 
+.seed-card {
+  border-color: var(--warn);
+}
+
+.seed-hint {
+  margin-top: 6px;
+}
+
 .advance-winner {
   margin-top: 10px;
   display: flex;
