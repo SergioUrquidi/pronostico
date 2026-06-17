@@ -47,7 +47,7 @@
           @if (viewMode() === 'fecha') {
             {{ match.group ? 'Grupo ' + match.group : match.phase }} ·
           }
-          {{ match.stadium }} · {{ match.dateLocal }} {{ match.timeLocal }}
+          {{ match.stadium }} · {{ kickoffToBolivia(match.kickoffAtUtc).date }} {{ kickoffToBolivia(match.kickoffAtUtc).time }} (BOL)
         </span>
         @if (isTimeLocked(match)) {
           <span class="badge locked">🔒 Bloqueado</span>

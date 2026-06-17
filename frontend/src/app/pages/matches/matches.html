@@ -27,7 +27,7 @@
   @for (match of visibleMatches(); track match.id) {
     <div class="card match-card">
       <div class="match-head">
-        <span class="tag">{{ match.stadium }} · {{ match.dateLocal }} {{ match.timeLocal }}</span>
+        <span class="tag">{{ match.stadium }} · {{ kickoffToBolivia(match.kickoffAtUtc).date }} {{ kickoffToBolivia(match.kickoffAtUtc).time }} (BOL)</span>
         @if (match.homeScore !== null) {
           <span class="result">{{ match.homeScore }} – {{ match.awayScore }}</span>
         }

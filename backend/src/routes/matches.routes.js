@@ -14,8 +14,9 @@ async function getLockMinutes() {
 
 async function isLocked(kickoffAtUtc) {
   const lockMinutes = await getLockMinutes();
-  const lockAt = new Date(kickoffAtUtc).getTime() - lockMinutes * 60 * 1000;
-  return Date.now() >= lockAt;
+  const kickoffMs = new Date(kickoffAtUtc).getTime();
+  if (isNaN(kickoffMs)) return true; // falla-segura: fecha inválida → bloqueado
+  return Date.now() >= kickoffMs - lockMinutes * 60 * 1000;
 }
 
 router.get('/', requireAuth, async (req, res) => {
@@ -25,7 +26,8 @@ router.get('/', requireAuth, async (req, res) => {
 
   res.json(
     rows.map((m) => {
-      const lockAt = new Date(m.kickoff_at_utc).getTime() - lockMinutes * 60 * 1000;
+      const kickoffMs = new Date(m.kickoff_at_utc).getTime();
+      const lockAt = isNaN(kickoffMs) ? 0 : kickoffMs - lockMinutes * 60 * 1000;
       return {
         id: m.id,
         num: m.num,

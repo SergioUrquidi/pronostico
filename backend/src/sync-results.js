@@ -92,7 +92,7 @@ async function syncResults(client) {
 
     // Build team-pair lookup from our DB
     const { rows: dbMatches } = await client.execute(
-      'SELECT id, phase, home, away, home_score, away_score, advance_winner FROM matches WHERE home IS NOT NULL AND away IS NOT NULL'
+      'SELECT id, phase, home, away, home_score, away_score, advance_winner, kickoff_at_utc FROM matches WHERE home IS NOT NULL AND away IS NOT NULL'
     );
 
     // Index our matches by "HOME|AWAY" in Spanish
@@ -116,6 +116,13 @@ async function syncResults(client) {
 
       const dbMatch = matchIndex[`${homeEs}|${awayEs}`];
       if (!dbMatch) continue;
+
+      // Skip if the match hasn't kicked off yet — prevents writing 0-0 for future games
+      const kickoffMs = new Date(dbMatch.kickoff_at_utc).getTime();
+      if (!isNaN(kickoffMs) && Date.now() < kickoffMs) {
+        console.log(`[sync] SKIP (futuro): ${homeEs} vs ${awayEs} arranca ${dbMatch.kickoff_at_utc}`);
+        continue;
+      }
 
       // Skip if we already have the same result stored
       if (dbMatch.home_score === homeScore && dbMatch.away_score === awayScore) continue;

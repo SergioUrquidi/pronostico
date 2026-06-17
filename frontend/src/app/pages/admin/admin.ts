@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { flagUrl } from '../../core/flags';
 import { KNOCKOUT_PHASES, Match } from '../../core/models';
+import { kickoffToBolivia } from '../../core/utils';
 
 const PHASES = ['Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final'];
 
@@ -26,6 +27,7 @@ export class Admin {
   error = signal('');
   toast = signal('');
   flagUrl = flagUrl;
+  kickoffToBolivia = kickoffToBolivia;
   /** advance winner draft per match id: '' | 'home' | 'away' */
   advDraft = signal<Record<string, string>>({});
 
@@ -118,6 +120,19 @@ export class Admin {
       this.showToast('Resultado guardado ✓');
     } catch {
       this.showToast('Error al guardar resultado');
+    }
+  }
+
+  async clearResult(match: Match): Promise<void> {
+    if (!confirm(`¿Borrar resultado de ${match.home} vs ${match.away}?`)) return;
+    try {
+      await firstValueFrom(this.api.adminSetResult(match.id, null as unknown as number, null as unknown as number, null));
+      this.matches.update((all) =>
+        all.map((m) => m.id === match.id ? { ...m, homeScore: null, awayScore: null, advanceWinner: null } : m)
+      );
+      this.showToast('Resultado borrado ✓');
+    } catch {
+      this.showToast('Error al borrar resultado');
     }
   }
 

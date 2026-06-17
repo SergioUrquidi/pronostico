@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { flagUrl } from '../../core/flags';
 import { GroupAdvanceMap, KNOCKOUT_PHASES, Match, PredictionMap } from '../../core/models';
+import { kickoffToBolivia } from '../../core/utils';
 
 const PHASES = ['Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final'];
 
@@ -115,6 +116,7 @@ export class Predict {
   }
 
   flagUrl = flagUrl;
+  kickoffToBolivia = kickoffToBolivia;
 
   isTimeLocked(match: Match): boolean {
     if (match.locked) return true;

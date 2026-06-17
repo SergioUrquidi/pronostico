@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { flagUrl } from '../../core/flags';
 import { Match } from '../../core/models';
+import { kickoffToBolivia } from '../../core/utils';
 
 const PHASES = ['Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final'];
 
@@ -66,6 +67,7 @@ export class Matches {
   }
 
   flagUrl = flagUrl;
+  kickoffToBolivia = kickoffToBolivia;
 
   isPredictionVisible(match: Match): boolean {
     if (match.locked) return true;

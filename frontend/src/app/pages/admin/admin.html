@@ -97,7 +97,7 @@
 } @else {
   @for (match of visibleMatches(); track match.id) {
     <div class="card match-card">
-      <div class="tag">{{ match.stadium }} · {{ match.dateLocal }} {{ match.timeLocal }}</div>
+      <div class="tag">{{ match.stadium }} · {{ kickoffToBolivia(match.kickoffAtUtc).date }} {{ kickoffToBolivia(match.kickoffAtUtc).time }} (BOL)</div>
 
       @if (match.home === null) {
         <div class="teams-edit">
@@ -133,6 +133,11 @@
           <button type="button" class="btn" (click)="saveResult(match, homeScore.value, awayScore.value)">
             Guardar resultado
           </button>
+          @if (match.homeScore !== null) {
+            <button type="button" class="btn secondary" (click)="clearResult(match)">
+              Borrar resultado
+            </button>
+          }
         </div>
 
         @if (isKnockout(match.phase)) {
