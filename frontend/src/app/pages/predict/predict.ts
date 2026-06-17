@@ -20,6 +20,7 @@ export class Predict {
   phases = PHASES;
   matches = signal<Match[]>([]);
   predictions = signal<PredictionMap>({});
+  allPredictions = signal<Record<string, Record<string, { displayName: string; home: number; away: number }>>>({});
   groupAdvance = signal<GroupAdvanceMap>({});
   draft = signal<Record<string, { home: string; away: string; advance: string }>>({});
   viewMode = signal<'grupo' | 'fecha'>('grupo');
@@ -88,14 +89,16 @@ export class Predict {
   private async load(silent = false): Promise<void> {
     if (!silent) { this.loading.set(true); this.error.set(''); }
     try {
-      const [matches, predictions, groupAdvance] = await Promise.all([
+      const [matches, predictions, groupAdvance, allPred] = await Promise.all([
         firstValueFrom(this.api.getMatches()),
         firstValueFrom(this.api.getMyPredictions()),
         firstValueFrom(this.api.getGroupAdvancePredictions()),
+        firstValueFrom(this.api.getAllPredictions()),
       ]);
       this.matches.set(matches);
       this.predictions.set(predictions);
       this.groupAdvance.set(groupAdvance);
+      this.allPredictions.set(allPred);
       if (!silent) {
         const draft: Record<string, { home: string; away: string; advance: string }> = {};
         for (const [matchId, pred] of Object.entries(predictions)) {
@@ -158,11 +161,17 @@ export class Predict {
         ...p,
         [match.id]: { home: homeN, away: awayN, advance: advance as 'home' | 'away' | null },
       }));
+      const fresh = await firstValueFrom(this.api.getAllPredictions());
+      this.allPredictions.set(fresh);
       this.showToast('Pronóstico guardado ✓');
     } catch (err: unknown) {
       const serverMsg = (err as { error?: { error?: string } })?.error?.error;
       this.showToast(serverMsg ?? 'No se pudo guardar');
     }
+  }
+
+  predictionsFor(matchId: string) {
+    return Object.values(this.allPredictions()[matchId] ?? {});
   }
 
   /** Teams currently predicted to advance from the given group */

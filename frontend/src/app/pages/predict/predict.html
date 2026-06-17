@@ -129,6 +129,17 @@
         </div>
       }
 
+      @if (predictionsFor(match.id).length > 0) {
+        <div class="predictions-grid">
+          @for (p of predictionsFor(match.id); track p.displayName) {
+            <div class="pred">
+              <div class="tag">{{ p.displayName }}</div>
+              <div class="pred-score">{{ p.home }}–{{ p.away }}</div>
+            </div>
+          }
+        </div>
+      }
+
       @if (match.homeScore !== null) {
         <div class="tag real-result">Resultado real: {{ match.homeScore }} – {{ match.awayScore }}</div>
       }

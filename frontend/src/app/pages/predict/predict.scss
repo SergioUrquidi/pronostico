@@ -148,6 +148,25 @@ h2 {
   margin-bottom: 10px;
 }
 
+.predictions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.pred {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+.pred-score {
+  font-weight: 800;
+}
+
 .toast {
   position: fixed;
   top: 16px;
