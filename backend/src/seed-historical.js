@@ -39,7 +39,7 @@ const PREDICTIONS = [
   ['G002', 'cesar',     1, 0],
   ['G002', 'sergio',    1, 0],
   ['G002', 'marco',     1, 1],
-  ['G002', 'rimmy',     2, 1],
+  ['G002', 'rimmy',     1, 1],  // puso empate, no 2-1
   ['G002', 'jonathan',  2, 1],
   ['G002', 'christian', 2, 1],
 
