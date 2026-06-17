@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { flagUrl } from '../../core/flags';
@@ -26,8 +26,12 @@ export class Scoreboard {
 
   groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
 
+  private destroyRef = inject(DestroyRef);
+
   constructor() {
     this.load();
+    const interval = setInterval(() => this.load(), 60_000);
+    this.destroyRef.onDestroy(() => clearInterval(interval));
   }
 
   private async load(): Promise<void> {

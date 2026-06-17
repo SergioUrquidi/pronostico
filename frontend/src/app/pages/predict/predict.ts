@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/api.service';
@@ -76,8 +76,12 @@ export class Predict {
     return all.filter((m) => m.phase === phase && (phase !== 'Grupos' || m.group === this.selectedGroup()));
   });
 
+  private destroyRef = inject(DestroyRef);
+
   constructor() {
     this.load();
+    const interval = setInterval(() => this.load(), 60_000);
+    this.destroyRef.onDestroy(() => clearInterval(interval));
   }
 
   private async load(): Promise<void> {
@@ -111,11 +115,15 @@ export class Predict {
 
   flagUrl = flagUrl;
 
-  isMatchSealedForBetting(match: Match): boolean {
+  isTimeLocked(match: Match): boolean {
     if (match.locked) return true;
-    if (match.homeScore !== null) return true;
     const kickoff = new Date(match.kickoffAtUtc).getTime();
     return Date.now() >= kickoff - 60 * 60 * 1000;
+  }
+
+  isMatchSealedForBetting(match: Match): boolean {
+    if (this.isTimeLocked(match)) return true;
+    return this.predictions()[match.id] !== undefined;
   }
 
   draftFor(matchId: string): { home: string; away: string; advance: string } {

@@ -60,8 +60,16 @@ router.put('/:matchId', requireAuth, async (req, res) => {
   const match = rows[0];
   if (!match) return res.status(404).json({ error: 'Partido no encontrado' });
 
-  if (match.home_score !== null || await isLocked(match.kickoff_at_utc)) {
+  if (await isLocked(match.kickoff_at_utc)) {
     return res.status(403).json({ error: 'El partido ya esta bloqueado, no se puede pronosticar' });
+  }
+
+  const { rows: existing } = await client.execute({
+    sql: 'SELECT id FROM predictions WHERE user_id = ? AND match_id = ?',
+    args: [req.user.sub, matchId],
+  });
+  if (existing.length > 0) {
+    return res.status(403).json({ error: 'Ya guardaste tu pronostico para este partido' });
   }
 
   // Validate advance_pred only for knockout phases
@@ -77,12 +85,7 @@ router.put('/:matchId', requireAuth, async (req, res) => {
 
   await client.execute({
     sql: `INSERT INTO predictions (user_id, match_id, home_pred, away_pred, advance_pred, updated_at)
-          VALUES (?, ?, ?, ?, ?, datetime('now'))
-          ON CONFLICT(user_id, match_id) DO UPDATE SET
-            home_pred = excluded.home_pred,
-            away_pred = excluded.away_pred,
-            advance_pred = excluded.advance_pred,
-            updated_at = datetime('now')`,
+          VALUES (?, ?, ?, ?, ?, datetime('now'))`,
     args: [req.user.sub, matchId, homeN, awayN, advancePred],
   });
 
