@@ -112,8 +112,15 @@ async function syncResults(client) {
       const awayEs = EN_TO_ES[g.away_team_name_en] ?? g.away_team_name_en?.toUpperCase();
       if (!homeEs || !awayEs) continue;
 
-      const dbMatch = matchIndex[`${homeEs}|${awayEs}`];
+      // Try direct order first, then reversed (API may list teams in different order than our DB)
+      const directMatch = matchIndex[`${homeEs}|${awayEs}`];
+      const reversedMatch = matchIndex[`${awayEs}|${homeEs}`];
+      const dbMatch = directMatch ?? reversedMatch;
       if (!dbMatch) continue;
+
+      // If teams are reversed in the API, swap the scores to match our DB home/away order
+      const finalHomeScore = directMatch ? homeScore : awayScore;
+      const finalAwayScore = directMatch ? awayScore : homeScore;
 
       // Skip if the match hasn't kicked off yet — prevents writing 0-0 for future games
       const kickoffMs = new Date(dbMatch.kickoff_at_utc).getTime();
@@ -123,19 +130,23 @@ async function syncResults(client) {
       }
 
       // Skip if we already have the same result stored
-      if (dbMatch.home_score === homeScore && dbMatch.away_score === awayScore) continue;
+      if (dbMatch.home_score === finalHomeScore && dbMatch.away_score === finalAwayScore) continue;
+
+      if (!directMatch) {
+        console.log(`[sync] INVERTIDO: API devolvió ${homeEs}|${awayEs}, BD tiene ${dbMatch.home}|${dbMatch.away}`);
+      }
 
       // For knockout draws, preserve any existing advance_winner set by admin
       const advanceWinner = dbMatch.advance_winner ?? null;
 
       updates.push({
         sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
-        args: [homeScore, awayScore, dbMatch.id],
+        args: [finalHomeScore, finalAwayScore, dbMatch.id],
       });
 
       // If knockout and a draw and no advance_winner set, log for admin attention
-      if (KNOCKOUT_PHASES.has(dbMatch.phase) && homeScore === awayScore && !advanceWinner) {
-        console.log(`[sync] KNOCKOUT DRAW — admin debe setear advance_winner: ${homeEs} ${homeScore}-${awayScore} ${awayEs} (id: ${dbMatch.id})`);
+      if (KNOCKOUT_PHASES.has(dbMatch.phase) && finalHomeScore === finalAwayScore && !advanceWinner) {
+        console.log(`[sync] KNOCKOUT DRAW — admin debe setear advance_winner: ${dbMatch.home} ${finalHomeScore}-${finalAwayScore} ${dbMatch.away} (id: ${dbMatch.id})`);
       }
     }
 
