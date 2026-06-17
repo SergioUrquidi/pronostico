@@ -23,6 +23,7 @@ const RESULTS = [
   { id: 'G017', home: 3, away: 1 },  // Francia 3-1 Senegal
   { id: 'G018', home: 1, away: 4 },  // Irak 1-4 Noruega
   { id: 'G019', home: 3, away: 0 },  // Argentina 3-0 Argelia
+  { id: 'G020', home: 3, away: 1 },  // Austria 3-1 Jordania
 ];
 
 // [matchId, username, home_pred, away_pred]
@@ -179,19 +180,51 @@ const PREDICTIONS = [
   ['G019', 'jonathan',  1, 0],
   ['G019', 'christian', 2, 1],
 
-  // G020 Austria vs Jordania (sin resultado todavia)
+  // G020 Austria 3-1 Jordania
   ['G020', 'cesar',     1, 0],
   ['G020', 'sergio',    2, 0],
   ['G020', 'marco',     3, 0],
   ['G020', 'rimmy',     1, 1],
   ['G020', 'jonathan',  2, 1],
   ['G020', 'christian', 1, 0],
+
+  // G021 Ghana vs Panama
+  ['G021', 'cesar',     1, 2],
+  ['G021', 'sergio',    3, 0],
+  ['G021', 'marco',     2, 1],
+  ['G021', 'rimmy',     2, 1],
+  ['G021', 'jonathan',  2, 0],
+  ['G021', 'christian', 2, 0],
+
+  // G022 Inglaterra vs Croacia
+  ['G022', 'cesar',     1, 1],
+  ['G022', 'sergio',    1, 0],
+  ['G022', 'marco',     1, 1],
+  ['G022', 'rimmy',     2, 1],
+  ['G022', 'jonathan',  2, 0],
+  ['G022', 'christian', 2, 1],
+
+  // G023 Portugal vs Rep. del Congo
+  ['G023', 'cesar',     3, 0],
+  ['G023', 'sergio',    2, 0],
+  ['G023', 'marco',     2, 0],
+  ['G023', 'rimmy',     2, 0],
+  ['G023', 'jonathan',  2, 1],
+  ['G023', 'christian', 2, 1],
+
+  // G024 Uzbekistan vs Colombia
+  ['G024', 'cesar',     0, 2],
+  ['G024', 'sergio',    0, 4],
+  ['G024', 'marco',     1, 2],
+  ['G024', 'rimmy',     0, 2],
+  ['G024', 'jonathan',  0, 1],
+  ['G024', 'christian', 0, 3],
 ];
 
 async function seedHistoricalData(client) {
   // Guard: only seed once
   const { rows: guard } = await client.execute({
-    sql: "SELECT value FROM config WHERE key = 'historical_seed_v2'",
+    sql: "SELECT value FROM config WHERE key = 'historical_seed_v3'",
     args: [],
   });
   if (guard.length > 0) {
@@ -211,14 +244,17 @@ async function seedHistoricalData(client) {
     sql: `INSERT INTO predictions (user_id, match_id, home_pred, away_pred, updated_at)
           SELECT u.id, ?, ?, ?, datetime('now')
           FROM users u WHERE u.username = ?
-          ON CONFLICT(user_id, match_id) DO NOTHING`,
+          ON CONFLICT(user_id, match_id) DO UPDATE SET
+            home_pred = excluded.home_pred,
+            away_pred = excluded.away_pred,
+            updated_at = datetime('now')`,
     args: [matchId, home, away, username],
   }));
   await client.batch(predStatements, 'write');
 
   // Mark as done
   await client.execute({
-    sql: "INSERT INTO config (key, value) VALUES ('historical_seed_v2', '1') ON CONFLICT(key) DO NOTHING",
+    sql: "INSERT INTO config (key, value) VALUES ('historical_seed_v3', '1') ON CONFLICT(key) DO NOTHING",
     args: [],
   });
   console.log('Historical seed complete.');
