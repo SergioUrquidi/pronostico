@@ -2,6 +2,7 @@ const express = require('express');
 const { client } = require('../db');
 const { requireAuth, requireAdmin } = require('../auth');
 const { seedHistoricalData } = require('../seed-historical');
+const { syncResults, getSyncStatus } = require('../sync-results');
 
 const router = express.Router();
 router.use(requireAuth, requireAdmin);
@@ -131,6 +132,21 @@ router.get('/predictions/match/:matchId', async (req, res) => {
       advance: r.advance_pred ?? null,
     }))
   );
+});
+
+// Force immediate sync from external API
+router.post('/sync-results', async (_req, res) => {
+  try {
+    await syncResults(client);
+    res.json({ ok: true, ...getSyncStatus() });
+  } catch (err) {
+    res.status(500).json({ error: String(err.message) });
+  }
+});
+
+// Sync status
+router.get('/sync-status', (_req, res) => {
+  res.json(getSyncStatus());
 });
 
 // One-time historical data seed — clears the guard key first so it always re-runs

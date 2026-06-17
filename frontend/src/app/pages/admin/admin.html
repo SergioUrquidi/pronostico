@@ -12,6 +12,20 @@
   </div>
 </div>
 
+<div class="card config-card sync-card">
+  <div class="tag">Sincronización automática de resultados — worldcup26.ir (cada 5 min)</div>
+  <div class="config-row">
+    <button type="button" class="btn" [disabled]="syncLoading()" (click)="syncResults()">
+      {{ syncLoading() ? 'Sincronizando...' : '🔄 Sincronizar resultados ahora' }}
+    </button>
+  </div>
+  @if (lastSync()) {
+    <div class="tag seed-hint">Último sync: {{ lastSync() | date:'dd/MM HH:mm' }}</div>
+  } @else {
+    <div class="tag seed-hint">Los resultados se actualizan automáticamente cada 5 min. Empates en knockout requieren marcar quién avanzó (penales) manualmente.</div>
+  }
+</div>
+
 <div class="card config-card seed-card">
   <div class="tag">Importar datos históricos de la planilla física (resultados + pronósticos)</div>
   <div class="config-row">
@@ -91,6 +105,7 @@
             <select
               class="input select-advance"
               [id]="'adv-' + match.id"
+              title="¿Quién avanzó?"
               [title]="'Quién avanzó en ' + match.home + ' vs ' + match.away"
               [ngModel]="advDraftFor(match.id)"
               (ngModelChange)="setAdvDraft(match.id, $event)"

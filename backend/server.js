@@ -2,7 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const { initDb } = require('./src/db');
+const { initDb, client } = require('./src/db');
+const { startAutoSync } = require('./src/sync-results');
 const authRoutes = require('./src/routes/auth.routes');
 const matchesRoutes = require('./src/routes/matches.routes');
 const predictionsRoutes = require('./src/routes/predictions.routes');
@@ -32,7 +33,10 @@ const PORT = process.env.PORT || 4000;
 
 initDb()
   .then(() => {
-    app.listen(PORT, () => console.log(`Pronostico API escuchando en puerto ${PORT}`));
+    app.listen(PORT, () => {
+      console.log(`Pronostico API escuchando en puerto ${PORT}`);
+      startAutoSync(client, 5 * 60 * 1000); // sync cada 5 min
+    });
   })
   .catch((err) => {
     console.error('No se pudo inicializar la base de datos:', err);

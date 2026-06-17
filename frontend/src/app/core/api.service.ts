@@ -66,6 +66,14 @@ export class ApiService {
     return this.http.post<{ ok: true; message: string }>(`${API_BASE_URL}/admin/seed-historical`, {});
   }
 
+  adminSyncResults(): Observable<{ ok: true; lastSync: string | null }> {
+    return this.http.post<{ ok: true; lastSync: string | null }>(`${API_BASE_URL}/admin/sync-results`, {});
+  }
+
+  adminGetSyncStatus(): Observable<{ lastSync: string | null; syncInProgress: boolean }> {
+    return this.http.get<{ lastSync: string | null; syncInProgress: boolean }>(`${API_BASE_URL}/admin/sync-status`);
+  }
+
   adminGetMatchPredictions(matchId: string): Observable<{ username: string; displayName: string; home: number | null; away: number | null; advance: string | null }[]> {
     return this.http.get<{ username: string; displayName: string; home: number | null; away: number | null; advance: string | null }[]>(
       `${API_BASE_URL}/admin/predictions/match/${matchId}`

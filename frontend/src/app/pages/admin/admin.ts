@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -9,7 +10,7 @@ const PHASES = ['Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'T
 
 @Component({
   selector: 'app-admin',
-  imports: [FormsModule],
+  imports: [FormsModule, DatePipe],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
 })
@@ -191,6 +192,23 @@ export class Admin {
 
   predictionsFor(matchId: string) {
     return this.matchPredictions()[matchId] ?? [];
+  }
+
+  syncLoading = signal(false);
+  lastSync = signal<string | null>(null);
+
+  async syncResults(): Promise<void> {
+    this.syncLoading.set(true);
+    try {
+      const res = await firstValueFrom(this.api.adminSyncResults());
+      this.lastSync.set(res.lastSync);
+      this.showToast('Resultados sincronizados desde worldcup26.ir ✓');
+      await this.load();
+    } catch {
+      this.showToast('Error al sincronizar resultados');
+    } finally {
+      this.syncLoading.set(false);
+    }
   }
 
   seedLoading = signal(false);
