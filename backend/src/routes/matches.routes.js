@@ -1,6 +1,7 @@
 const express = require('express');
 const { client } = require('../db');
 const { requireAuth } = require('../auth');
+const { syncResults, getSyncStatus } = require('../sync-results');
 
 const router = express.Router();
 
@@ -20,6 +21,13 @@ async function isLocked(kickoffAtUtc) {
 }
 
 router.get('/', requireAuth, async (req, res) => {
+  // Passive sync: if more than 2 minutes since last sync, trigger in background
+  const { lastSync } = getSyncStatus();
+  const twoMinutes = 2 * 60 * 1000;
+  if (!lastSync || Date.now() - lastSync.getTime() > twoMinutes) {
+    syncResults(client).catch(() => {});
+  }
+
   const { rows } = await client.execute('SELECT * FROM matches ORDER BY num');
   const lockMinutes = await getLockMinutes();
   const now = Date.now();

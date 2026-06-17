@@ -104,8 +104,6 @@ async function syncResults(client) {
     const updates = [];
 
     for (const g of games) {
-      if (!g.finished) continue;
-
       const homeScore = parseInt(g.home_score, 10);
       const awayScore = parseInt(g.away_score, 10);
       if (isNaN(homeScore) || isNaN(awayScore)) continue;
