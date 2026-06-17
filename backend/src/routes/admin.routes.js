@@ -136,7 +136,7 @@ router.get('/predictions/match/:matchId', async (req, res) => {
 // One-time historical data seed — clears the guard key first so it always re-runs
 router.post('/seed-historical', async (_req, res) => {
   try {
-    await client.execute("DELETE FROM config WHERE key = 'historical_seed_v1'");
+    await client.execute("DELETE FROM config WHERE key LIKE 'historical_seed_%'");
     await seedHistoricalData(client);
     res.json({ ok: true, message: 'Datos historicos importados correctamente' });
   } catch (err) {

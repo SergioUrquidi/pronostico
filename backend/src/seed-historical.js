@@ -191,7 +191,7 @@ const PREDICTIONS = [
 async function seedHistoricalData(client) {
   // Guard: only seed once
   const { rows: guard } = await client.execute({
-    sql: "SELECT value FROM config WHERE key = 'historical_seed_v1'",
+    sql: "SELECT value FROM config WHERE key = 'historical_seed_v2'",
     args: [],
   });
   if (guard.length > 0) {
@@ -218,7 +218,7 @@ async function seedHistoricalData(client) {
 
   // Mark as done
   await client.execute({
-    sql: "INSERT INTO config (key, value) VALUES ('historical_seed_v1', '1') ON CONFLICT(key) DO NOTHING",
+    sql: "INSERT INTO config (key, value) VALUES ('historical_seed_v2', '1') ON CONFLICT(key) DO NOTHING",
     args: [],
   });
   console.log('Historical seed complete.');
