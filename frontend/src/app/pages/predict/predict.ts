@@ -80,13 +80,12 @@ export class Predict {
 
   constructor() {
     this.load();
-    const interval = setInterval(() => this.load(), 60_000);
+    const interval = setInterval(() => this.load(true), 60_000);
     this.destroyRef.onDestroy(() => clearInterval(interval));
   }
 
-  private async load(): Promise<void> {
-    this.loading.set(true);
-    this.error.set('');
+  private async load(silent = false): Promise<void> {
+    if (!silent) { this.loading.set(true); this.error.set(''); }
     try {
       const [matches, predictions, groupAdvance] = await Promise.all([
         firstValueFrom(this.api.getMatches()),
@@ -96,20 +95,22 @@ export class Predict {
       this.matches.set(matches);
       this.predictions.set(predictions);
       this.groupAdvance.set(groupAdvance);
-      const draft: Record<string, { home: string; away: string; advance: string }> = {};
-      for (const [matchId, pred] of Object.entries(predictions)) {
-        draft[matchId] = {
-          home: String(pred.home),
-          away: String(pred.away),
-          advance: pred.advance ?? '',
-        };
+      if (!silent) {
+        const draft: Record<string, { home: string; away: string; advance: string }> = {};
+        for (const [matchId, pred] of Object.entries(predictions)) {
+          draft[matchId] = {
+            home: String(pred.home),
+            away: String(pred.away),
+            advance: pred.advance ?? '',
+          };
+        }
+        this.draft.set(draft);
+        if (this.dates().length) this.selectedDate.set(this.dates()[0]);
       }
-      this.draft.set(draft);
-      if (this.dates().length) this.selectedDate.set(this.dates()[0]);
     } catch {
-      this.error.set('No se pudo cargar los pronósticos. Intentá de nuevo.');
+      if (!silent) this.error.set('No se pudo cargar los pronósticos. Intentá de nuevo.');
     } finally {
-      this.loading.set(false);
+      if (!silent) this.loading.set(false);
     }
   }
 

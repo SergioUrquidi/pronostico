@@ -30,13 +30,12 @@ export class Scoreboard {
 
   constructor() {
     this.load();
-    const interval = setInterval(() => this.load(), 60_000);
+    const interval = setInterval(() => this.load(true), 60_000);
     this.destroyRef.onDestroy(() => clearInterval(interval));
   }
 
-  private async load(): Promise<void> {
-    this.loading.set(true);
-    this.error.set('');
+  private async load(silent = false): Promise<void> {
+    if (!silent) { this.loading.set(true); this.error.set(''); }
     try {
       const [board, standings] = await Promise.all([
         firstValueFrom(this.api.getScoreboard()),
@@ -45,9 +44,9 @@ export class Scoreboard {
       this.board.set(board);
       this.standings.set(standings);
     } catch {
-      this.error.set('No se pudo cargar la tabla. Intentá de nuevo.');
+      if (!silent) this.error.set('No se pudo cargar la tabla. Intentá de nuevo.');
     } finally {
-      this.loading.set(false);
+      if (!silent) this.loading.set(false);
     }
   }
 

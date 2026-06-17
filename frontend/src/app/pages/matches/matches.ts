@@ -45,13 +45,12 @@ export class Matches {
 
   constructor() {
     this.load();
-    const interval = setInterval(() => this.load(), 60_000);
+    const interval = setInterval(() => this.load(true), 60_000);
     this.destroyRef.onDestroy(() => clearInterval(interval));
   }
 
-  private async load(): Promise<void> {
-    this.loading.set(true);
-    this.error.set('');
+  private async load(silent = false): Promise<void> {
+    if (!silent) { this.loading.set(true); this.error.set(''); }
     try {
       const [matches, predictions] = await Promise.all([
         firstValueFrom(this.api.getMatches()),
@@ -60,9 +59,9 @@ export class Matches {
       this.matches.set(matches);
       this.allPredictions.set(predictions);
     } catch {
-      this.error.set('No se pudo cargar los partidos. Intentá de nuevo.');
+      if (!silent) this.error.set('No se pudo cargar los partidos. Intentá de nuevo.');
     } finally {
-      this.loading.set(false);
+      if (!silent) this.loading.set(false);
     }
   }
 
@@ -72,7 +71,7 @@ export class Matches {
     if (match.locked) return true;
     if (match.homeScore !== null) return true;
     const kickoff = new Date(match.kickoffAtUtc).getTime();
-    return Date.now() >= kickoff;
+    return Date.now() >= kickoff - 60 * 60 * 1000;
   }
 
   predictionsFor(matchId: string) {
