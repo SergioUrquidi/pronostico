@@ -62,6 +62,7 @@ const EN_TO_ES = {
   'DR Congo': 'REP. DEL CONGO',
   'Congo DR': 'REP. DEL CONGO',
   'Democratic Republic of Congo': 'REP. DEL CONGO',
+  'Democratic Republic of the Congo': 'REP. DEL CONGO',
   'Uzbekistan': 'UZBEKISTAN',
   'Colombia': 'COLOMBIA',
   'England': 'INGLATERRA',
