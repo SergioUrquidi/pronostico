@@ -51,6 +51,8 @@
         </span>
         @if (isTimeLocked(match)) {
           <span class="badge locked">🔒 Bloqueado</span>
+        } @else if (predictions()[match.id] !== undefined) {
+          <span class="badge saved">✓ Guardado</span>
         }
       </div>
       <div class="teams">
