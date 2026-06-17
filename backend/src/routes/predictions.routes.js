@@ -20,9 +20,11 @@ router.get('/me', requireAuth, async (req, res) => {
 });
 
 router.get('/all', requireAuth, async (_req, res) => {
-  const { rows: matches } = await client.execute('SELECT id, kickoff_at_utc FROM matches');
+  const { rows: matches } = await client.execute('SELECT id, kickoff_at_utc, home_score FROM matches');
   const lockedFlags = await Promise.all(matches.map((m) => isLocked(m.kickoff_at_utc)));
-  const lockedMatchIds = new Set(matches.filter((_, i) => lockedFlags[i]).map((m) => m.id));
+  const lockedMatchIds = new Set(
+    matches.filter((m, i) => lockedFlags[i] || m.home_score !== null).map((m) => m.id)
+  );
 
   const { rows } = await client.execute(
     `SELECT p.match_id, p.home_pred, p.away_pred, p.advance_pred, u.username, u.display_name
@@ -58,7 +60,7 @@ router.put('/:matchId', requireAuth, async (req, res) => {
   const match = rows[0];
   if (!match) return res.status(404).json({ error: 'Partido no encontrado' });
 
-  if (await isLocked(match.kickoff_at_utc)) {
+  if (match.home_score !== null || await isLocked(match.kickoff_at_utc)) {
     return res.status(403).json({ error: 'El partido ya esta bloqueado, no se puede pronosticar' });
   }
 

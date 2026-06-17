@@ -49,7 +49,7 @@
           }
           {{ match.stadium }} · {{ match.dateLocal }} {{ match.timeLocal }}
         </span>
-        @if (match.locked) {
+        @if (isMatchSealedForBetting(match)) {
           <span class="badge locked">🔒 Bloqueado</span>
         }
       </div>
