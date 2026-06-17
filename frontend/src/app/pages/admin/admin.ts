@@ -130,6 +130,14 @@ export class Admin {
     }
   }
 
+  playerView = signal(false);
+  selectedPlayer = signal('');
+  playerPredictions = signal<{ matchId: string; home: string; away: string; dateLocal: string; timeLocal: string; phase: string; group: string | null; homePred: number; awayPred: number }[]>([]);
+  playerPredDraft = signal<Record<string, { home: string; away: string }>>({});
+  players = ['marco', 'sergio', 'cesar', 'rimmy', 'jonathan', 'christian'];
+  playerNames: Record<string, string> = { marco:'Marco', sergio:'Sergio', cesar:'César', rimmy:'Rimmy', jonathan:'Jonathan', christian:'Christian' };
+  playerLoading = signal(false);
+
   // Predictions editor per match
   expandedMatch = signal<string | null>(null);
   matchPredictions = signal<Record<string, { username: string; displayName: string; home: number | null; away: number | null; advance: string | null }[]>>({});
@@ -192,6 +200,50 @@ export class Admin {
 
   predictionsFor(matchId: string) {
     return this.matchPredictions()[matchId] ?? [];
+  }
+
+  async loadPlayerPredictions(username: string): Promise<void> {
+    this.selectedPlayer.set(username);
+    this.playerLoading.set(true);
+    try {
+      const res = await firstValueFrom(this.api.adminGetPlayerPredictions(username));
+      this.playerPredictions.set(res.predictions);
+      const draft: Record<string, { home: string; away: string }> = {};
+      for (const p of res.predictions) {
+        draft[p.matchId] = { home: String(p.homePred), away: String(p.awayPred) };
+      }
+      this.playerPredDraft.set(draft);
+    } catch {
+      this.showToast('No se pudo cargar las predicciones del jugador');
+    } finally {
+      this.playerLoading.set(false);
+    }
+  }
+
+  playerPredDraftFor(matchId: string): { home: string; away: string } {
+    return this.playerPredDraft()[matchId] ?? { home: '', away: '' };
+  }
+
+  setPlayerPredDraftHome(matchId: string, value: string): void {
+    this.playerPredDraft.update(d => ({ ...d, [matchId]: { ...d[matchId] ?? { home: '', away: '' }, home: value } }));
+  }
+
+  setPlayerPredDraftAway(matchId: string, value: string): void {
+    this.playerPredDraft.update(d => ({ ...d, [matchId]: { ...d[matchId] ?? { home: '', away: '' }, away: value } }));
+  }
+
+  async savePlayerPredFromView(matchId: string): Promise<void> {
+    const d = this.playerPredDraftFor(matchId);
+    if (d.home === '' || d.away === '') { this.showToast('Completá ambos goles'); return; }
+    try {
+      await firstValueFrom(this.api.adminSetPrediction(matchId, this.selectedPlayer(), Number(d.home), Number(d.away)));
+      this.playerPredictions.update(preds =>
+        preds.map(p => p.matchId === matchId ? { ...p, homePred: Number(d.home), awayPred: Number(d.away) } : p)
+      );
+      this.showToast('Pronóstico guardado ✓');
+    } catch {
+      this.showToast('Error al guardar');
+    }
   }
 
   syncLoading = signal(false);

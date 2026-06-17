@@ -161,4 +161,40 @@ router.post('/seed-historical', async (_req, res) => {
   }
 });
 
+// Todas las predicciones de un jugador específico
+router.get('/predictions/player/:username', async (req, res) => {
+  const { username } = req.params;
+  const { rows: userRows } = await client.execute({
+    sql: "SELECT id, display_name FROM users WHERE username = ? AND role = 'player'",
+    args: [username],
+  });
+  if (!userRows[0]) return res.status(404).json({ error: 'Jugador no encontrado' });
+
+  const { rows } = await client.execute({
+    sql: `SELECT p.match_id, p.home_pred, p.away_pred,
+                 m.home, m.away, m.date_local, m.time_local, m.phase, m.group_name
+          FROM predictions p
+          JOIN matches m ON m.id = p.match_id
+          WHERE p.user_id = ?
+          ORDER BY m.num`,
+    args: [userRows[0].id],
+  });
+
+  res.json({
+    username,
+    displayName: userRows[0].display_name,
+    predictions: rows.map(r => ({
+      matchId: r.match_id,
+      home: r.home,
+      away: r.away,
+      dateLocal: r.date_local,
+      timeLocal: r.time_local,
+      phase: r.phase,
+      group: r.group_name,
+      homePred: r.home_pred,
+      awayPred: r.away_pred,
+    })),
+  });
+});
+
 module.exports = router;

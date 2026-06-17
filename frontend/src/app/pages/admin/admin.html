@@ -7,7 +7,7 @@
 <div class="card config-card">
   <div class="tag">Minutos de bloqueo antes del partido (parametrizable)</div>
   <div class="config-row">
-    <input class="input" type="number" min="0" [(ngModel)]="lockMinutes" name="lockMinutes" />
+    <input class="input" type="number" min="0" title="Minutos de bloqueo antes del partido" [(ngModel)]="lockMinutes" name="lockMinutes" />
     <button type="button" class="btn" (click)="saveLockMinutes()">Guardar</button>
   </div>
 </div>
@@ -34,6 +34,42 @@
     </button>
   </div>
   <div class="tag seed-hint">Esto carga los 19 resultados y todos los pronósticos registrados hasta ahora.</div>
+</div>
+
+<!-- Vista por jugador -->
+<div class="card config-card">
+  <div class="tag">Ver y editar pronósticos por jugador</div>
+  <div class="player-tabs">
+    @for (p of players; track p) {
+      <button type="button" class="tab" [class.active]="selectedPlayer() === p" (click)="loadPlayerPredictions(p)">
+        {{ playerNames[p] }}
+      </button>
+    }
+  </div>
+
+  @if (playerLoading()) {
+    <p class="tag">Cargando...</p>
+  } @else if (selectedPlayer() && playerPredictions().length > 0) {
+    <div class="player-pred-list">
+      @for (pred of playerPredictions(); track pred.matchId) {
+        <div class="player-pred-row">
+          <span class="player-pred-match">{{ pred.home }} vs {{ pred.away }}<br><span class="tag">{{ pred.dateLocal }} {{ pred.timeLocal }}</span></span>
+          <input class="input score-sm" type="number" min="0" max="20"
+            [title]="pred.home + ' - local'"
+            [value]="playerPredDraftFor(pred.matchId).home"
+            (input)="setPlayerPredDraftHome(pred.matchId, $any($event.target).value)" />
+          <span>–</span>
+          <input class="input score-sm" type="number" min="0" max="20"
+            [title]="pred.away + ' - visitante'"
+            [value]="playerPredDraftFor(pred.matchId).away"
+            (input)="setPlayerPredDraftAway(pred.matchId, $any($event.target).value)" />
+          <button type="button" class="btn btn-sm" (click)="savePlayerPredFromView(pred.matchId)">Guardar</button>
+        </div>
+      }
+    </div>
+  } @else if (selectedPlayer() && !playerLoading()) {
+    <p class="tag">{{ playerNames[selectedPlayer()] }} no tiene pronósticos registrados aún.</p>
+  }
 </div>
 
 <div class="tabs">

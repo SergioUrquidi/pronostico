@@ -87,4 +87,12 @@ export class ApiService {
       advance: advance ?? null,
     });
   }
+
+  adminGetPlayerPredictions(username: string): Observable<{
+    username: string;
+    displayName: string;
+    predictions: { matchId: string; home: string; away: string; dateLocal: string; timeLocal: string; phase: string; group: string | null; homePred: number; awayPred: number }[]
+  }> {
+    return this.http.get<any>(`${API_BASE_URL}/admin/predictions/player/${username}`);
+  }
 }
