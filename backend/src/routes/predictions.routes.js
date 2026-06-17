@@ -20,12 +20,6 @@ router.get('/me', requireAuth, async (req, res) => {
 });
 
 router.get('/all', requireAuth, async (_req, res) => {
-  const { rows: matches } = await client.execute('SELECT id, kickoff_at_utc, home_score FROM matches');
-  const lockedFlags = await Promise.all(matches.map((m) => isLocked(m.kickoff_at_utc)));
-  const lockedMatchIds = new Set(
-    matches.filter((m, i) => lockedFlags[i] || m.home_score !== null).map((m) => m.id)
-  );
-
   const { rows } = await client.execute(
     `SELECT p.match_id, p.home_pred, p.away_pred, p.advance_pred, u.username, u.display_name
      FROM predictions p JOIN users u ON u.id = p.user_id
@@ -34,7 +28,6 @@ router.get('/all', requireAuth, async (_req, res) => {
 
   const byMatch = {};
   for (const r of rows) {
-    if (!lockedMatchIds.has(r.match_id)) continue;
     if (!byMatch[r.match_id]) byMatch[r.match_id] = {};
     byMatch[r.match_id][r.username] = {
       displayName: r.display_name,
