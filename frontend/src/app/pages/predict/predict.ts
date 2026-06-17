@@ -145,17 +145,21 @@ export class Predict {
 
   async save(match: Match): Promise<void> {
     const d = this.draftFor(match.id);
-    if (d.home === '' || d.away === '') return;
+    const homeN = Number(d.home);
+    const awayN = Number(d.away);
+    if (d.home == null || d.away == null || d.home === '' || d.away === '') return;
+    if (!Number.isInteger(homeN) || !Number.isInteger(awayN) || homeN < 0 || awayN < 0) return;
     try {
       const advance = d.advance || null;
-      await firstValueFrom(this.api.savePrediction(match.id, Number(d.home), Number(d.away), advance));
+      await firstValueFrom(this.api.savePrediction(match.id, homeN, awayN, advance));
       this.predictions.update((p) => ({
         ...p,
-        [match.id]: { home: Number(d.home), away: Number(d.away), advance: advance as 'home' | 'away' | null },
+        [match.id]: { home: homeN, away: awayN, advance: advance as 'home' | 'away' | null },
       }));
       this.showToast('Pronóstico guardado ✓');
-    } catch {
-      this.showToast('No se pudo guardar (¿partido bloqueado?)');
+    } catch (err: unknown) {
+      const serverMsg = (err as { error?: { error?: string } })?.error?.error;
+      this.showToast(serverMsg ?? 'No se pudo guardar');
     }
   }
 
