@@ -66,6 +66,7 @@ export class Matches {
 
   isPredictionVisible(match: Match): boolean {
     if (match.locked) return true;
+    if (match.homeScore !== null) return true;
     const kickoff = new Date(match.kickoffAtUtc).getTime();
     return Date.now() >= kickoff;
   }

@@ -113,6 +113,7 @@ export class Predict {
 
   isMatchSealedForBetting(match: Match): boolean {
     if (match.locked) return true;
+    if (match.homeScore !== null) return true;
     const kickoff = new Date(match.kickoffAtUtc).getTime();
     return Date.now() >= kickoff - 60 * 60 * 1000;
   }
