@@ -119,6 +119,16 @@ async function runMigrations() {
       // Column already exists — safe to ignore
     }
   }
+
+  // Limpia scores 0-0 escritos erroneamente por el sync en partidos aún no disputados.
+  // Es idempotente: una vez que el partido arranca, kickoff_at_utc queda en el pasado
+  // y esta query no lo toca más.
+  await client.execute(
+    `UPDATE matches
+     SET home_score = NULL, away_score = NULL
+     WHERE home_score = 0 AND away_score = 0
+       AND kickoff_at_utc > datetime('now')`
+  );
 }
 
 module.exports = { client, initDb };
