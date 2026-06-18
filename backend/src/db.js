@@ -120,13 +120,45 @@ async function runMigrations() {
     }
   }
 
-  // Corrige kickoff_at_utc con offset incorrecto. Idempotente: WHERE filtra solo el valor viejo.
-  await client.execute(`UPDATE matches SET kickoff_at_utc = '2026-06-18T02:00:00Z' WHERE id = 'G024' AND kickoff_at_utc = '2026-06-18T04:00:00Z'`);
-  await client.execute(`UPDATE matches SET kickoff_at_utc = '2026-06-24T02:00:00Z' WHERE id = 'G048' AND kickoff_at_utc = '2026-06-24T04:00:00Z'`);
-  await client.execute(`UPDATE matches SET kickoff_at_utc = '2026-06-25T01:00:00Z' WHERE id = 'G053' AND kickoff_at_utc = '2026-06-25T03:00:00Z'`);
-  await client.execute(`UPDATE matches SET kickoff_at_utc = '2026-06-25T01:00:00Z' WHERE id = 'G054' AND kickoff_at_utc = '2026-06-25T03:00:00Z'`);
-  await client.execute(`UPDATE matches SET kickoff_at_utc = '2026-06-27T00:00:00Z' WHERE id = 'G065' AND kickoff_at_utc = '2026-06-27T01:00:00Z'`);
-  await client.execute(`UPDATE matches SET kickoff_at_utc = '2026-06-27T00:00:00Z' WHERE id = 'G066' AND kickoff_at_utc = '2026-06-27T02:00:00Z'`);
+  // Corrige kickoff_at_utc con offset incorrecto (fixture usó EDT para todos los estadios).
+  // Idempotente: WHERE filtra solo el valor viejo. Cada línea es segura de re-ejecutar.
+  const kickoffFixes = [
+    ['G024','2026-06-18T02:00:00Z','2026-06-18T04:00:00Z'],
+    ['G026','2026-06-18T19:00:00Z','2026-06-18T22:00:00Z'],
+    ['G027','2026-06-18T22:00:00Z','2026-06-19T01:00:00Z'],
+    ['G028','2026-06-19T01:00:00Z','2026-06-19T03:00:00Z'],
+    ['G031','2026-06-20T04:00:00Z','2026-06-20T06:00:00Z'],
+    ['G032','2026-06-19T19:00:00Z','2026-06-19T22:00:00Z'],
+    ['G034','2026-06-21T00:00:00Z','2026-06-21T01:00:00Z'],
+    ['G035','2026-06-20T17:00:00Z','2026-06-20T18:00:00Z'],
+    ['G036','2026-06-21T04:00:00Z','2026-06-21T06:00:00Z'],
+    ['G039','2026-06-21T19:00:00Z','2026-06-21T22:00:00Z'],
+    ['G040','2026-06-22T01:00:00Z','2026-06-22T04:00:00Z'],
+    ['G043','2026-06-22T17:00:00Z','2026-06-22T18:00:00Z'],
+    ['G044','2026-06-23T03:00:00Z','2026-06-23T06:00:00Z'],
+    ['G047','2026-06-23T17:00:00Z','2026-06-23T18:00:00Z'],
+    ['G048','2026-06-24T02:00:00Z','2026-06-24T04:00:00Z'],
+    ['G051','2026-06-24T19:00:00Z','2026-06-24T22:00:00Z'],
+    ['G052','2026-06-24T19:00:00Z','2026-06-24T22:00:00Z'],
+    ['G053','2026-06-25T01:00:00Z','2026-06-25T03:00:00Z'],
+    ['G054','2026-06-25T01:00:00Z','2026-06-25T03:00:00Z'],
+    ['G057','2026-06-25T23:00:00Z','2026-06-26T00:00:00Z'],
+    ['G058','2026-06-25T23:00:00Z','2026-06-26T00:00:00Z'],
+    ['G059','2026-06-26T02:00:00Z','2026-06-26T05:00:00Z'],
+    ['G060','2026-06-26T02:00:00Z','2026-06-26T05:00:00Z'],
+    ['G063','2026-06-27T03:00:00Z','2026-06-27T06:00:00Z'],
+    ['G064','2026-06-27T03:00:00Z','2026-06-27T06:00:00Z'],
+    ['G065','2026-06-27T00:00:00Z','2026-06-27T01:00:00Z'],
+    ['G066','2026-06-27T00:00:00Z','2026-06-27T02:00:00Z'],
+    ['G069','2026-06-28T02:00:00Z','2026-06-28T03:00:00Z'],
+    ['G070','2026-06-28T02:00:00Z','2026-06-28T03:00:00Z'],
+  ];
+  for (const [id, newUtc, oldUtc] of kickoffFixes) {
+    await client.execute({
+      sql: `UPDATE matches SET kickoff_at_utc = ? WHERE id = ? AND kickoff_at_utc = ?`,
+      args: [newUtc, id, oldUtc],
+    });
+  }
 
   // Limpia scores 0-0 escritos erroneamente por el sync en partidos aún no disputados.
   await client.execute(
