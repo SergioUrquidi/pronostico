@@ -148,36 +148,4 @@
     <p class="tag">No hay partidos en esta fase todavía.</p>
   }
 
-  @if (viewMode() === 'grupo' && selectedPhase() === 'Grupos' && teamsInGroup().length > 0) {
-    <div class="card group-advance-card">
-      <div class="group-advance-title">
-        ⬆️ ¿Qué equipos avanzan del Grupo {{ selectedGroup() }}?
-        <span class="tag"> (+1 pt por equipo correcto)</span>
-      </div>
-      <div class="advance-team-grid">
-        @for (team of teamsInGroup(); track team) {
-          <button
-            type="button"
-            class="btn-advance"
-            [class.selected]="groupAdvanceFor(selectedGroup()).includes(team)"
-            (click)="toggleGroupAdvanceTeam(selectedGroup(), team)"
-          >
-            @if (flagUrl(team)) { <img class="flag-sm" [src]="flagUrl(team)" alt="" /> }
-            {{ team }}
-          </button>
-        }
-      </div>
-      <div class="tag">
-        Seleccionados: {{ groupAdvanceFor(selectedGroup()).join(', ') || '—' }}
-      </div>
-      <button
-        type="button"
-        class="btn"
-        [disabled]="groupAdvanceFor(selectedGroup()).length !== 2"
-        (click)="saveGroupAdvance(selectedGroup())"
-      >
-        Guardar avance del grupo
-      </button>
-    </div>
-  }
 }
