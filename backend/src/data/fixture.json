@@ -633,7 +633,7 @@
     "stadium": "Ciudad de Mexico",
     "date_local": "24 junio",
     "time_local": "21:00",
-    "kickoff_at_utc": "2026-06-25T03:00:00Z"
+    "kickoff_at_utc": "2026-06-25T01:00:00Z"
   },
   {
     "id": "G054",
@@ -645,7 +645,7 @@
     "stadium": "Monterrey",
     "date_local": "24 junio",
     "time_local": "21:00",
-    "kickoff_at_utc": "2026-06-25T03:00:00Z"
+    "kickoff_at_utc": "2026-06-25T01:00:00Z"
   },
   {
     "id": "G055",
@@ -777,7 +777,7 @@
     "stadium": "Houston",
     "date_local": "26 junio",
     "time_local": "20:00",
-    "kickoff_at_utc": "2026-06-27T01:00:00Z"
+    "kickoff_at_utc": "2026-06-27T00:00:00Z"
   },
   {
     "id": "G066",
@@ -789,7 +789,7 @@
     "stadium": "Guadalajara",
     "date_local": "26 junio",
     "time_local": "20:00",
-    "kickoff_at_utc": "2026-06-27T02:00:00Z"
+    "kickoff_at_utc": "2026-06-27T00:00:00Z"
   },
   {
     "id": "G067",
