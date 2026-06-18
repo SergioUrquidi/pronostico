@@ -285,7 +285,7 @@
     "stadium": "Ciudad de Mexico",
     "date_local": "17 junio",
     "time_local": "22:00",
-    "kickoff_at_utc": "2026-06-18T04:00:00Z"
+    "kickoff_at_utc": "2026-06-18T02:00:00Z"
   },
   {
     "id": "G025",
@@ -573,7 +573,7 @@
     "stadium": "Guadalajara",
     "date_local": "23 junio",
     "time_local": "22:00",
-    "kickoff_at_utc": "2026-06-24T04:00:00Z"
+    "kickoff_at_utc": "2026-06-24T02:00:00Z"
   },
   {
     "id": "G049",

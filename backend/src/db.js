@@ -120,9 +120,12 @@ async function runMigrations() {
     }
   }
 
+  // Corrige kickoff_at_utc incorrecto: estadios CDT (UTC-5) de Mexico fueron cargados
+  // con offset PDT (UTC-7). Idempotente: el WHERE solo matchea el valor viejo.
+  await client.execute(`UPDATE matches SET kickoff_at_utc = '2026-06-18T02:00:00Z' WHERE id = 'G024' AND kickoff_at_utc = '2026-06-18T04:00:00Z'`);
+  await client.execute(`UPDATE matches SET kickoff_at_utc = '2026-06-24T02:00:00Z' WHERE id = 'G048' AND kickoff_at_utc = '2026-06-24T04:00:00Z'`);
+
   // Limpia scores 0-0 escritos erroneamente por el sync en partidos aún no disputados.
-  // Es idempotente: una vez que el partido arranca, kickoff_at_utc queda en el pasado
-  // y esta query no lo toca más.
   await client.execute(
     `UPDATE matches
      SET home_score = NULL, away_score = NULL
