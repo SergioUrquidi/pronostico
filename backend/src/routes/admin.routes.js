@@ -161,12 +161,13 @@ router.post('/seed-historical', async (_req, res) => {
   }
 });
 
-// Poblar manualmente los Dieciseisavos con los clasificados de grupos
+// Poblar Dieciseisavos y avanzar clasificados en toda la eliminatoria
 router.post('/populate-bracket', async (_req, res) => {
   try {
-    const { populateBracket } = require('../utils/bracket-populator');
-    const result = await populateBracket(client);
-    res.json(result);
+    const { populateBracket, populateKnockoutRounds } = require('../utils/bracket-populator');
+    const r32 = await populateBracket(client);
+    const knockout = await populateKnockoutRounds(client);
+    res.json({ r32, knockout });
   } catch (err) {
     console.error('[bracket] Error al poblar bracket:', err);
     res.status(500).json({ error: String(err.message) });

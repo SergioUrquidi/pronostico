@@ -164,4 +164,88 @@ async function populateBracket(client) {
   return { populated: true, count: updates.length };
 }
 
-module.exports = { populateBracket };
+/**
+ * Retorna el equipo ganador de un partido eliminatorio.
+ * Considera advance_winner para partidos que terminaron en empate (penales).
+ */
+function getWinner(match) {
+  if (match.home_score === null || match.away_score === null) return null;
+  if (match.home_score > match.away_score) return match.home;
+  if (match.away_score > match.home_score) return match.away;
+  if (match.advance_winner === 'home') return match.home;
+  if (match.advance_winner === 'away') return match.away;
+  return null;
+}
+
+/**
+ * Retorna el equipo perdedor de un partido eliminatorio (para TercerPuesto).
+ */
+function getLoser(match) {
+  if (match.home_score === null || match.away_score === null) return null;
+  if (match.home_score > match.away_score) return match.away;
+  if (match.away_score > match.home_score) return match.home;
+  if (match.advance_winner === 'home') return match.away;
+  if (match.advance_winner === 'away') return match.home;
+  return null;
+}
+
+const knockoutConfig = require('../data/knockout-config.json');
+
+/**
+ * Pobla automáticamente los partidos de Octavos, Cuartos, Semifinal,
+ * TercerPuesto y Final a medida que los clasificados de la ronda anterior
+ * quedan definidos.
+ *
+ * Es idempotente: si un partido ya tiene home definido, lo omite.
+ * Se llama en cada ciclo de sync — solo actúa cuando hay avances nuevos.
+ *
+ * @param {import('@libsql/client').Client} client
+ * @returns {Promise<{ populated: boolean, count: number }>}
+ */
+async function populateKnockoutRounds(client) {
+  // Cargar todos los partidos de Dieciseisavos en adelante de una sola query
+  const { rows: allMatches } = await client.execute(
+    `SELECT id, phase, home, away, home_score, away_score, advance_winner
+     FROM matches
+     WHERE phase IN ('Dieciseisavos','Octavos','Cuartos','Semifinal','TercerPuesto','Final')`
+  );
+
+  const matchMap = Object.fromEntries(allMatches.map((m) => [m.id, m]));
+  const updates = [];
+
+  for (const [, entries] of Object.entries(knockoutConfig)) {
+    for (const entry of entries) {
+      if (entry.match.startsWith('_')) continue;
+
+      const target = matchMap[entry.match];
+      if (!target || target.home !== null) continue; // ya poblado
+
+      const homeFeed = matchMap[entry.home_from];
+      const awayFeed = matchMap[entry.away_from];
+      if (!homeFeed || !awayFeed) continue;
+
+      const homeSide = entry.home_side ?? 'winner';
+      const awaySide = entry.away_side ?? 'winner';
+
+      const homeTeam = homeSide === 'loser' ? getLoser(homeFeed) : getWinner(homeFeed);
+      const awayTeam = awaySide === 'loser' ? getLoser(awayFeed) : getWinner(awayFeed);
+
+      if (!homeTeam || !awayTeam) continue; // partido(s) previo(s) aún sin ganador
+
+      console.log(`[bracket] ${entry.match} (${target.phase}): ${homeTeam} vs ${awayTeam}`);
+      updates.push({
+        sql: 'UPDATE matches SET home = ?, away = ? WHERE id = ?',
+        args: [homeTeam, awayTeam, entry.match],
+      });
+    }
+  }
+
+  if (updates.length > 0) {
+    await client.batch(updates, 'write');
+    console.log(`[bracket] ${updates.length} partido(s) de fases posteriores poblados`);
+  }
+
+  return { populated: updates.length > 0, count: updates.length };
+}
+
+module.exports = { populateBracket, populateKnockoutRounds };

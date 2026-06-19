@@ -1,0 +1,29 @@
+{
+  "_note": "VERIFICAR contra el bracket oficial FIFA 2026 antes del 4 julio. Define qué partido alimenta a cuál en cada fase. Los pares siguen orden secuencial del fixture.",
+  "Octavos": [
+    { "match": "OCTA_089", "home_from": "R32_073", "away_from": "R32_074" },
+    { "match": "OCTA_090", "home_from": "R32_075", "away_from": "R32_076" },
+    { "match": "OCTA_091", "home_from": "R32_077", "away_from": "R32_078" },
+    { "match": "OCTA_092", "home_from": "R32_079", "away_from": "R32_080" },
+    { "match": "OCTA_093", "home_from": "R32_081", "away_from": "R32_082" },
+    { "match": "OCTA_094", "home_from": "R32_083", "away_from": "R32_084" },
+    { "match": "OCTA_095", "home_from": "R32_085", "away_from": "R32_086" },
+    { "match": "OCTA_096", "home_from": "R32_087", "away_from": "R32_088" }
+  ],
+  "Cuartos": [
+    { "match": "CUAR_097", "home_from": "OCTA_089", "away_from": "OCTA_090" },
+    { "match": "CUAR_098", "home_from": "OCTA_091", "away_from": "OCTA_092" },
+    { "match": "CUAR_099", "home_from": "OCTA_093", "away_from": "OCTA_094" },
+    { "match": "CUAR_100", "home_from": "OCTA_095", "away_from": "OCTA_096" }
+  ],
+  "Semifinal": [
+    { "match": "SEMI_101", "home_from": "CUAR_097", "away_from": "CUAR_098" },
+    { "match": "SEMI_102", "home_from": "CUAR_099", "away_from": "CUAR_100" }
+  ],
+  "TercerPuesto": [
+    { "match": "TERC_103", "home_from": "SEMI_101", "home_side": "loser", "away_from": "SEMI_102", "away_side": "loser" }
+  ],
+  "Final": [
+    { "match": "FINA_104", "home_from": "SEMI_101", "away_from": "SEMI_102" }
+  ]
+}
