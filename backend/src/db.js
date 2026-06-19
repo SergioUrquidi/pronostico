@@ -160,6 +160,26 @@ async function runMigrations() {
     });
   }
 
+  // Pronósticos de Jonathan (G025-G032) cargados por admin — olvidó registrarlos antes del lock.
+  // INSERT OR IGNORE: idempotente, no pisa si ya existen.
+  const jonathanPreds = [
+    ['G025', 1, 0],
+    ['G026', 0, 0],
+    ['G027', 2, 1],
+    ['G028', 1, 1],
+    ['G029', 3, 0],
+    ['G030', 0, 1],
+    ['G031', 0, 0],
+    ['G032', 2, 0],
+  ];
+  for (const [matchId, home, away] of jonathanPreds) {
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO predictions (user_id, match_id, home_pred, away_pred, updated_at)
+            SELECT id, ?, ?, ?, datetime('now') FROM users WHERE username = 'jonathan'`,
+      args: [matchId, home, away],
+    });
+  }
+
   // Limpia scores 0-0 escritos erroneamente por el sync en partidos aún no disputados.
   await client.execute(
     `UPDATE matches
