@@ -157,6 +157,13 @@ async function syncResults(client) {
     }
 
     lastSync = new Date();
+
+    // Auto-poblar dieciseisavos si todos los grupos terminaron
+    const { populateBracket } = require('./utils/bracket-populator');
+    const bracketResult = await populateBracket(client);
+    if (bracketResult.populated) {
+      console.log('[bracket] Dieciseisavos poblados automáticamente:', bracketResult.count, 'partidos');
+    }
   } catch (err) {
     console.error('[sync] Error al sincronizar resultados:', err.message);
   } finally {

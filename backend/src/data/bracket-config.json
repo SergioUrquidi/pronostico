@@ -1,0 +1,19 @@
+{
+  "_note": "VERIFICAR con el bracket oficial FIFA antes del 28 junio 2026. 12 grupos A-L, 32 clasificados: 12 primeros + 12 segundos + 8 mejores terceros. Los slots '3rd' se asignan en orden (pts DESC, dg DESC, gf DESC) a los 8 mejores terceros. TOTAL: 12 primeros + 12 segundos + 8 terceros = 32 equipos en 16 partidos.",
+  "R32_073": { "home": "1A", "away": "2B" },
+  "R32_074": { "home": "1C", "away": "2D" },
+  "R32_075": { "home": "1E", "away": "2F" },
+  "R32_076": { "home": "1G", "away": "2H" },
+  "R32_077": { "home": "1I", "away": "2J" },
+  "R32_078": { "home": "1K", "away": "2L" },
+  "R32_079": { "home": "2C", "away": "3rd" },
+  "R32_080": { "home": "2E", "away": "3rd" },
+  "R32_081": { "home": "2A", "away": "3rd" },
+  "R32_082": { "home": "2G", "away": "3rd" },
+  "R32_083": { "home": "1J", "away": "2I" },
+  "R32_084": { "home": "1L", "away": "2K" },
+  "R32_085": { "home": "1B", "away": "3rd" },
+  "R32_086": { "home": "1D", "away": "3rd" },
+  "R32_087": { "home": "1F", "away": "3rd" },
+  "R32_088": { "home": "1H", "away": "3rd" }
+}

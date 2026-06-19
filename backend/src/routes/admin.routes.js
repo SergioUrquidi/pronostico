@@ -161,6 +161,18 @@ router.post('/seed-historical', async (_req, res) => {
   }
 });
 
+// Poblar manualmente los Dieciseisavos con los clasificados de grupos
+router.post('/populate-bracket', async (_req, res) => {
+  try {
+    const { populateBracket } = require('../utils/bracket-populator');
+    const result = await populateBracket(client);
+    res.json(result);
+  } catch (err) {
+    console.error('[bracket] Error al poblar bracket:', err);
+    res.status(500).json({ error: String(err.message) });
+  }
+});
+
 // Todas las predicciones de un jugador específico
 router.get('/predictions/player/:username', async (req, res) => {
   const { username } = req.params;
