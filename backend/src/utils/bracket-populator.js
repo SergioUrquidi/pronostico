@@ -213,9 +213,9 @@ async function populateKnockoutRounds(client) {
   const matchMap = Object.fromEntries(allMatches.map((m) => [m.id, m]));
   const updates = [];
 
-  for (const [, entries] of Object.entries(knockoutConfig)) {
+  for (const [key, entries] of Object.entries(knockoutConfig)) {
+    if (key.startsWith('_')) continue;
     for (const entry of entries) {
-      if (entry.match.startsWith('_')) continue;
 
       const target = matchMap[entry.match];
       if (!target || target.home !== null) continue; // ya poblado

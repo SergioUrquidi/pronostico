@@ -108,9 +108,9 @@ async function syncResults(client) {
       return;
     }
 
-    // Build team-pair lookup from our DB
+    // Solo traer partidos sin resultado — los ya completados no cambian
     const { rows: dbMatches } = await client.execute(
-      'SELECT id, phase, home, away, home_score, away_score, advance_winner, kickoff_at_utc FROM matches WHERE home IS NOT NULL AND away IS NOT NULL'
+      'SELECT id, phase, home, away, home_score, away_score, advance_winner, kickoff_at_utc FROM matches WHERE home IS NOT NULL AND away IS NOT NULL AND (home_score IS NULL OR away_score IS NULL)'
     );
 
     // Index our matches by "HOME|AWAY" in Spanish
@@ -140,15 +140,9 @@ async function syncResults(client) {
       const finalHomeScore = directMatch ? homeScore : awayScore;
       const finalAwayScore = directMatch ? awayScore : homeScore;
 
-      // Skip if the match hasn't kicked off yet — prevents writing 0-0 for future games
+      // Skip si el partido aún no arrancó — evita guardar 0-0 en partidos futuros
       const kickoffMs = new Date(dbMatch.kickoff_at_utc).getTime();
-      if (!isNaN(kickoffMs) && Date.now() < kickoffMs) {
-        console.log(`[sync] SKIP (futuro): ${homeEs} vs ${awayEs} arranca ${dbMatch.kickoff_at_utc}`);
-        continue;
-      }
-
-      // Skip if we already have the same result stored
-      if (dbMatch.home_score === finalHomeScore && dbMatch.away_score === finalAwayScore) continue;
+      if (!isNaN(kickoffMs) && Date.now() < kickoffMs) continue;
 
       if (!directMatch) {
         console.log(`[sync] INVERTIDO: API devolvió ${homeEs}|${awayEs}, BD tiene ${dbMatch.home}|${dbMatch.away}`);
