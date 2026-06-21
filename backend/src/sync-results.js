@@ -9,6 +9,24 @@
 
 const EXTERNAL_API = 'https://worldcup26.ir/get/games';
 
+async function fetchWithRetry(url, maxAttempts = 3, timeoutMs = 25000) {
+  let lastError;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res;
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxAttempts) {
+        console.log(`[sync] Intento ${attempt} fallido (${err.message}), reintentando en 5s...`);
+        await new Promise((r) => setTimeout(r, 5000));
+      }
+    }
+  }
+  throw lastError;
+}
+
 // Map English team names (API) → Spanish uppercase names (our DB)
 const EN_TO_ES = {
   'Mexico': 'MEXICO',
@@ -81,8 +99,7 @@ async function syncResults(client) {
   syncInProgress = true;
 
   try {
-    const res = await fetch(EXTERNAL_API, { signal: AbortSignal.timeout(15000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetchWithRetry(EXTERNAL_API);
     const data = await res.json();
     const games = data.games ?? data ?? [];
 
