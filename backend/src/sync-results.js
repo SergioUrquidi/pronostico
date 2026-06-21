@@ -100,7 +100,8 @@ async function fetchEspnScores() {
     for (const event of events) {
       const comp = event.competitions?.[0];
       if (!comp) continue;
-      if (event.status?.type?.name !== 'STATUS_FULL_TIME') continue;
+      const status = event.status?.type?.name;
+      if (status !== 'STATUS_FULL_TIME' && status !== 'STATUS_IN_PROGRESS') continue;
       const home = comp.competitors?.find((c) => c.homeAway === 'home');
       const away = comp.competitors?.find((c) => c.homeAway === 'away');
       if (!home || !away) continue;
@@ -109,7 +110,7 @@ async function fetchEspnScores() {
       if (isNaN(homeScore) || isNaN(awayScore)) continue;
       const homeEs = EN_TO_ES[home.team.displayName] ?? home.team.displayName.toUpperCase();
       const awayEs = EN_TO_ES[away.team.displayName] ?? away.team.displayName.toUpperCase();
-      scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore };
+      scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore, finished: status === 'STATUS_FULL_TIME' };
     }
     return scoreMap;
   } catch {
@@ -225,6 +226,42 @@ async function syncResults(client) {
     if (espnUpdates.length > 0) {
       await client.batch(espnUpdates, 'write');
       console.log(`[sync] ${espnUpdates.length} resultado(s) actualizado(s) desde ESPN (fallback)`);
+    }
+
+    // ESPN live: refrescar partidos en curso (kickoff en últimas 3h) aunque ya tengan score
+    const now = new Date().toISOString();
+    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    const { rows: liveMatches } = await client.execute({
+      sql: `SELECT id, home, away, home_score, away_score FROM matches
+            WHERE home IS NOT NULL AND kickoff_at_utc <= ? AND kickoff_at_utc >= ?`,
+      args: [now, threeHoursAgo],
+    });
+
+    if (liveMatches.length > 0) {
+      if (!espnScores) espnScores = await fetchEspnScores();
+      if (espnScores) {
+        const liveUpdates = [];
+        for (const lm of liveMatches) {
+          const directKey = `${lm.home}|${lm.away}`;
+          const reversedKey = `${lm.away}|${lm.home}`;
+          const espnData = espnScores[directKey] ?? espnScores[reversedKey];
+          if (!espnData) continue;
+          const isReversed = !espnScores[directKey];
+          const finalHome = isReversed ? espnData.awayScore : espnData.homeScore;
+          const finalAway = isReversed ? espnData.homeScore : espnData.awayScore;
+          if (lm.home_score === finalHome && lm.away_score === finalAway) continue;
+          const tag = espnData.finished ? 'FT' : 'en curso';
+          console.log(`[sync] ESPN live: ${lm.home} ${finalHome}-${finalAway} ${lm.away} (${tag})`);
+          liveUpdates.push({
+            sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
+            args: [finalHome, finalAway, lm.id],
+          });
+        }
+        if (liveUpdates.length > 0) {
+          await client.batch(liveUpdates, 'write');
+          console.log(`[sync] ${liveUpdates.length} partido(s) en curso actualizado(s) con ESPN`);
+        }
+      }
     }
 
     lastSync = new Date();
