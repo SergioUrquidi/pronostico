@@ -8,6 +8,7 @@
  */
 
 const EXTERNAL_API = 'https://worldcup26.ir/get/games';
+const SECONDARY_API = 'https://site.api.espn.com/apis/site/v2/sports/soccer/FIFA.WORLD/scoreboard';
 
 async function fetchWithRetry(url, maxAttempts = 3, timeoutMs = 25000) {
   let lastError;
@@ -89,6 +90,33 @@ const EN_TO_ES = {
   'Panama': 'PANAMA',
 };
 
+async function fetchEspnScores() {
+  try {
+    const res = await fetch(SECONDARY_API, { signal: AbortSignal.timeout(15000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const events = data.events ?? [];
+    const scoreMap = {};
+    for (const event of events) {
+      const comp = event.competitions?.[0];
+      if (!comp) continue;
+      if (event.status?.type?.name !== 'STATUS_FULL_TIME') continue;
+      const home = comp.competitors?.find((c) => c.homeAway === 'home');
+      const away = comp.competitors?.find((c) => c.homeAway === 'away');
+      if (!home || !away) continue;
+      const homeScore = parseInt(home.score, 10);
+      const awayScore = parseInt(away.score, 10);
+      if (isNaN(homeScore) || isNaN(awayScore)) continue;
+      const homeEs = EN_TO_ES[home.team.displayName] ?? home.team.displayName.toUpperCase();
+      const awayEs = EN_TO_ES[away.team.displayName] ?? away.team.displayName.toUpperCase();
+      scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore };
+    }
+    return scoreMap;
+  } catch {
+    return null;
+  }
+}
+
 const KNOCKOUT_PHASES = new Set(['Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final']);
 
 let lastSync = null;
@@ -165,6 +193,38 @@ async function syncResults(client) {
     if (updates.length > 0) {
       await client.batch(updates, 'write');
       console.log(`[sync] ${updates.length} resultado(s) actualizado(s) desde worldcup26.ir`);
+    }
+
+    // ESPN fallback: partidos que worldcup26.ir no cubrió pero ya tienen kickoff pasado
+    const updatedIds = new Set(updates.map((u) => u.args[2]));
+    const espnUpdates = [];
+    let espnScores = null;
+
+    for (const dbMatch of dbMatches) {
+      if (updatedIds.has(dbMatch.id)) continue;
+      const kickoffMs = new Date(dbMatch.kickoff_at_utc).getTime();
+      if (!isNaN(kickoffMs) && Date.now() < kickoffMs) continue;
+      if (!espnScores) {
+        espnScores = await fetchEspnScores();
+        if (!espnScores) break;
+      }
+      const directKey = `${dbMatch.home}|${dbMatch.away}`;
+      const reversedKey = `${dbMatch.away}|${dbMatch.home}`;
+      const espnData = espnScores[directKey] ?? espnScores[reversedKey];
+      if (!espnData) continue;
+      const isReversed = !espnScores[directKey];
+      const finalHome = isReversed ? espnData.awayScore : espnData.homeScore;
+      const finalAway = isReversed ? espnData.homeScore : espnData.awayScore;
+      console.log(`[sync] ESPN fallback: ${dbMatch.home} ${finalHome}-${finalAway} ${dbMatch.away}`);
+      espnUpdates.push({
+        sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
+        args: [finalHome, finalAway, dbMatch.id],
+      });
+    }
+
+    if (espnUpdates.length > 0) {
+      await client.batch(espnUpdates, 'write');
+      console.log(`[sync] ${espnUpdates.length} resultado(s) actualizado(s) desde ESPN (fallback)`);
     }
 
     lastSync = new Date();
