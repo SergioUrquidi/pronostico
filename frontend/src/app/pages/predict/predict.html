@@ -88,7 +88,7 @@
           [ngModel]="draftFor(match.id).away"
           (ngModelChange)="setDraftAway(match.id, $event)"
         />
-        <button type="button" class="btn" [disabled]="isMatchSealedForBetting(match)" (click)="save(match)">Guardar</button>
+        <button type="button" class="btn" [disabled]="isMatchSealedForBetting(match)" (click)="save(match)">{{ saveBtnLabel(match.id) }}</button>
       </div>
 
       @if (isKnockout(match.phase) && !match.locked) {

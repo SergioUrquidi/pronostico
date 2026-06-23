@@ -23,6 +23,7 @@ export class Predict {
   allPredictions = signal<Record<string, Record<string, { displayName: string; home: number; away: number }>>>({});
   groupAdvance = signal<GroupAdvanceMap>({});
   draft = signal<Record<string, { home: string; away: string; advance: string }>>({});
+  changeCount = signal<Record<string, number>>({});
   viewMode = signal<'grupo' | 'fecha'>('grupo');
   selectedPhase = signal('Grupos');
   selectedGroup = signal('A');
@@ -147,12 +148,19 @@ export class Predict {
     this.draft.update((d) => ({ ...d, [matchId]: { ...this.draftFor(matchId), advance: value } }));
   }
 
+  saveBtnLabel(matchId: string): string {
+    if (this.predictions()[matchId] === undefined) return 'Guardar';
+    const count = this.changeCount()[matchId] ?? 0;
+    return count > 0 ? `Editar (${count})` : 'Editar';
+  }
+
   async save(match: Match): Promise<void> {
     const d = this.draftFor(match.id);
     const homeN = Number(d.home);
     const awayN = Number(d.away);
     if (d.home == null || d.away == null || d.home === '' || d.away === '') return;
     if (!Number.isInteger(homeN) || !Number.isInteger(awayN) || homeN < 0 || awayN < 0) return;
+    const alreadyExisted = this.predictions()[match.id] !== undefined;
     try {
       const advance = d.advance || null;
       await firstValueFrom(this.api.savePrediction(match.id, homeN, awayN, advance));
@@ -160,6 +168,9 @@ export class Predict {
         ...p,
         [match.id]: { home: homeN, away: awayN, advance: advance as 'home' | 'away' | null },
       }));
+      if (alreadyExisted) {
+        this.changeCount.update((c) => ({ ...c, [match.id]: (c[match.id] ?? 0) + 1 }));
+      }
       const fresh = await firstValueFrom(this.api.getAllPredictions());
       this.allPredictions.set(fresh);
       this.showToast('Pronóstico guardado ✓');
