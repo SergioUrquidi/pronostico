@@ -187,6 +187,12 @@ async function runMigrations() {
      WHERE home_score = 0 AND away_score = 0
        AND kickoff_at_utc > datetime('now')`
   );
+
+  // Corrige nombre incorrecto: Cristiano → Christian.
+  await client.execute({
+    sql: `UPDATE users SET display_name = 'Christian' WHERE username = 'christian' AND display_name = 'Cristiano'`,
+    args: [],
+  });
 }
 
 module.exports = { client, initDb };
