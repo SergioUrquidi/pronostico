@@ -128,8 +128,7 @@ export class Predict {
   }
 
   isMatchSealedForBetting(match: Match): boolean {
-    if (this.isTimeLocked(match)) return true;
-    return this.predictions()[match.id] !== undefined;
+    return this.isTimeLocked(match);
   }
 
   draftFor(matchId: string): { home: string; away: string; advance: string } {
