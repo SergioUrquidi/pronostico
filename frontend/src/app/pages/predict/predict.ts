@@ -123,9 +123,7 @@ export class Predict {
   kickoffToBolivia = kickoffToBolivia;
 
   isTimeLocked(match: Match): boolean {
-    if (match.locked) return true;
-    const kickoff = new Date(match.kickoffAtUtc).getTime();
-    return Date.now() >= kickoff - 60 * 60 * 1000;
+    return match.locked;
   }
 
   isMatchSealedForBetting(match: Match): boolean {
