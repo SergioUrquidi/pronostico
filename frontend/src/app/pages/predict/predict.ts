@@ -158,8 +158,14 @@ export class Predict {
     const d = this.draftFor(match.id);
     const homeN = Number(d.home);
     const awayN = Number(d.away);
-    if (d.home == null || d.away == null || d.home === '' || d.away === '') return;
-    if (!Number.isInteger(homeN) || !Number.isInteger(awayN) || homeN < 0 || awayN < 0) return;
+    if (d.home == null || d.away == null || d.home === '' || d.away === '') {
+      this.showToast('Completá ambos scores para guardar');
+      return;
+    }
+    if (!Number.isInteger(homeN) || !Number.isInteger(awayN) || homeN < 0 || awayN < 0) {
+      this.showToast('Los scores deben ser números enteros positivos');
+      return;
+    }
     const alreadyExisted = this.predictions()[match.id] !== undefined;
     try {
       const advance = d.advance || null;
