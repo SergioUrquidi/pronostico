@@ -1,0 +1,12 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["tsconfig*.json"],
+      "url": "https://json.schemastore.org/tsconfig"
+    }
+  ],
+  "cSpell.language": "en,es",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "never"
+  }
+}
