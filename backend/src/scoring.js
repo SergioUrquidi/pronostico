@@ -29,9 +29,9 @@ function effectiveAdvanceWinner(homeScore, awayScore, advanceWinner) {
  * Only applies to non-group phases.
  */
 function calcAdvanceScore(advancePred, homeScore, awayScore, advanceWinner) {
-  const winner = effectiveAdvanceWinner(homeScore, awayScore, advanceWinner);
-  if (!winner || !advancePred) return 0;
-  return advancePred === winner ? 1 : 0;
+  // +1 only when the match went to penalties (advance_winner explicitly set by admin)
+  if (!advanceWinner || !advancePred) return 0;
+  return advancePred === advanceWinner ? 1 : 0;
 }
 
 module.exports = { calcScore, calcAdvanceScore, effectiveAdvanceWinner };
