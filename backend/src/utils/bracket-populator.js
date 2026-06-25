@@ -21,28 +21,29 @@ const bracketConfig = require('../data/bracket-config.json');
  * @returns {Promise<{ populated: boolean, reason?: string, count?: number }>}
  */
 async function populateBracket(client) {
-  // 1. Verificar que todos los partidos de Grupos estén terminados
-  const { rows: pendingGroups } = await client.execute(
-    `SELECT COUNT(*) AS n FROM matches
+  // 1. Determinar qué grupos están completamente terminados y cuáles no
+  const { rows: groupPending } = await client.execute(
+    `SELECT group_name,
+            SUM(CASE WHEN home_score IS NULL OR away_score IS NULL THEN 1 ELSE 0 END) AS pending
+     FROM matches
      WHERE phase = 'Grupos'
-       AND (home_score IS NULL OR away_score IS NULL)`
+     GROUP BY group_name`
   );
-  if (pendingGroups[0].n > 0) {
-    console.log(`[bracket] Grupos incompletos: ${pendingGroups[0].n} partido(s) sin resultado`);
+  const completedGroups = new Set(groupPending.filter((r) => Number(r.pending) === 0).map((r) => r.group_name));
+  const allGroupsDone = groupPending.every((r) => Number(r.pending) === 0);
+
+  if (completedGroups.size === 0) {
+    console.log('[bracket] Ningún grupo terminado aún');
     return { populated: false, reason: 'grupos_incompletos' };
   }
 
-  // 2. Verificar si los R32 ya están poblados (al menos uno con home != NULL)
-  const { rows: alreadySet } = await client.execute(
-    `SELECT COUNT(*) AS n FROM matches
-     WHERE phase = 'Dieciseisavos' AND home IS NOT NULL`
+  // 2. Leer partidos de R32 para saber cuáles ya tienen home (idempotencia por partido)
+  const { rows: r32Rows } = await client.execute(
+    `SELECT id, home FROM matches WHERE phase = 'Dieciseisavos'`
   );
-  if (alreadySet[0].n > 0) {
-    console.log(`[bracket] Dieciseisavos ya poblados (${alreadySet[0].n} partidos con equipos)`);
-    return { populated: false, reason: 'ya_poblado' };
-  }
+  const alreadyPopulated = new Set(r32Rows.filter((r) => r.home !== null).map((r) => r.id));
 
-  // 3. Leer todos los partidos de Grupos con resultados
+  // 3. Leer todos los partidos de Grupos
   const { rows: matches } = await client.execute(
     `SELECT group_name, home, away, home_score, away_score
      FROM matches
@@ -90,12 +91,13 @@ async function populateBracket(client) {
     }
   }
 
-  // 5. Ordenar cada grupo y extraer posiciones
+  // 5. Ordenar cada grupo TERMINADO y extraer posiciones
   // positions: { '1A': 'MEXICO', '2A': 'CANADA', '3A': 'USA', ... }
   const positions = {};
   const allThirds = [];
 
   for (const [groupName, teamsMap] of Object.entries(groups)) {
+    if (!completedGroups.has(groupName)) continue; // solo grupos con todos los resultados
     const rows = Object.values(teamsMap).map((r) => ({ ...r, dg: r.gf - r.gc }));
     rows.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
 
@@ -107,43 +109,36 @@ async function populateBracket(client) {
     }
   }
 
-  // 6. Calcular los 8 mejores terceros
+  // 6. Calcular los 8 mejores terceros (solo disponible cuando TODOS los grupos terminaron)
   allThirds.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-  const bestThirds = allThirds.slice(0, 8).map((t) => t.team);
+  const bestThirds = allGroupsDone ? allThirds.slice(0, 8).map((t) => t.team) : [];
 
-  console.log('[bracket] Mejores terceros clasificados:', bestThirds);
+  if (allGroupsDone) console.log('[bracket] Mejores terceros clasificados:', bestThirds);
 
-  // 7. Resolver slots y armar los updates
+  // 7. Resolver slots y armar los updates — por partido, idempotente
   let thirdIndex = 0;
   const updates = [];
 
   for (const [matchId, slots] of Object.entries(bracketConfig)) {
-    // Ignorar la clave de nota
     if (matchId.startsWith('_')) continue;
+    if (alreadyPopulated.has(matchId)) continue; // ya tiene equipos, no tocar
+
+    const needsThird = slots.home === '3rd' || slots.away === '3rd';
+    // Los slots con '3rd' solo se pueden resolver cuando TODOS los grupos terminaron
+    if (needsThird && !allGroupsDone) continue;
 
     const resolveSlot = (slot) => {
       if (slot === '3rd') {
-        if (thirdIndex >= bestThirds.length) {
-          console.error(`[bracket] ERROR: Se necesita más de ${bestThirds.length} mejor(es) tercero(s)`);
-          return null;
-        }
+        if (thirdIndex >= bestThirds.length) return null;
         return bestThirds[thirdIndex++];
       }
-      const team = positions[slot];
-      if (!team) {
-        console.error(`[bracket] ERROR: No se encontró equipo para slot "${slot}"`);
-        return null;
-      }
-      return team;
+      return positions[slot] ?? null;
     };
 
     const homeTeam = resolveSlot(slots.home);
     const awayTeam = resolveSlot(slots.away);
 
-    if (!homeTeam || !awayTeam) {
-      console.error(`[bracket] No se pudo resolver ${matchId}: home="${slots.home}" -> ${homeTeam}, away="${slots.away}" -> ${awayTeam}`);
-      continue;
-    }
+    if (!homeTeam || !awayTeam) continue; // grupo(s) referenciados aún no terminaron
 
     console.log(`[bracket] ${matchId}: ${homeTeam} vs ${awayTeam} (slots: ${slots.home} vs ${slots.away})`);
     updates.push({
@@ -153,7 +148,7 @@ async function populateBracket(client) {
   }
 
   if (updates.length === 0) {
-    console.error('[bracket] No se generaron updates — verificar bracket-config.json y standings');
+    console.log('[bracket] Sin actualizaciones nuevas para Dieciseisavos');
     return { populated: false, reason: 'sin_updates' };
   }
 
