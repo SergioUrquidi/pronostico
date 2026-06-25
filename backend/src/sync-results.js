@@ -102,6 +102,9 @@ async function fetchEspnScores() {
       if (!comp) continue;
       const status = event.status?.type?.name;
       if (status !== 'STATUS_FULL_TIME' && status !== 'STATUS_IN_PROGRESS') continue;
+      // TODO-PENALES: cuando se confirme el status ESPN para penales, reemplazar la línea de arriba con:
+      // const FINISHED_STATUSES = new Set(['STATUS_FULL_TIME', 'STATUS_FINAL_PENALTY' /* verificar nombre real */]);
+      // if (!FINISHED_STATUSES.has(status) && status !== 'STATUS_IN_PROGRESS') continue;
       const home = comp.competitors?.find((c) => c.homeAway === 'home');
       const away = comp.competitors?.find((c) => c.homeAway === 'away');
       if (!home || !away) continue;
@@ -111,6 +114,11 @@ async function fetchEspnScores() {
       const homeEs = EN_TO_ES[home.team.displayName] ?? home.team.displayName.toUpperCase();
       const awayEs = EN_TO_ES[away.team.displayName] ?? away.team.displayName.toUpperCase();
       scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore, finished: status === 'STATUS_FULL_TIME' };
+      // TODO-PENALES: reemplazar la línea de arriba con estas tres líneas:
+      // const advanceWinner = (homeScore === awayScore && home.advance !== away.advance)
+      //   ? (home.advance ? 'home' : 'away')
+      //   : null;
+      // scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore, finished: status === 'STATUS_FULL_TIME', advanceWinner };
     }
     return scoreMap;
   } catch {
@@ -221,6 +229,22 @@ async function syncResults(client) {
         sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
         args: [finalHome, finalAway, dbMatch.id],
       });
+      // TODO-PENALES: reemplazar el push de arriba con este bloque para auto-setear advance_winner:
+      // const espnAdvWinner = espnData.advanceWinner ?? null;
+      // const advWinner = espnAdvWinner
+      //   ? (isReversed ? (espnAdvWinner === 'home' ? 'away' : 'home') : espnAdvWinner)
+      //   : null;
+      // if (KNOCKOUT_PHASES.has(dbMatch.phase) && advWinner && !dbMatch.advance_winner) {
+      //   espnUpdates.push({
+      //     sql: 'UPDATE matches SET home_score = ?, away_score = ?, advance_winner = ? WHERE id = ?',
+      //     args: [finalHome, finalAway, advWinner, dbMatch.id],
+      //   });
+      // } else {
+      //   espnUpdates.push({
+      //     sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
+      //     args: [finalHome, finalAway, dbMatch.id],
+      //   });
+      // }
     }
 
     if (espnUpdates.length > 0) {
