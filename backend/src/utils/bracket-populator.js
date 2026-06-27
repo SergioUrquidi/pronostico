@@ -244,7 +244,9 @@ async function populateKnockoutRounds(client) {
     for (const entry of entries) {
 
       const target = matchMap[entry.match];
-      if (!target || target.home !== null) continue; // ya poblado
+      if (!target) continue;
+      // Saltar solo si ambos equipos ya están definidos
+      if (target.home !== null && target.away !== null) continue;
 
       const homeFeed = matchMap[entry.home_from];
       const awayFeed = matchMap[entry.away_from];
@@ -256,13 +258,19 @@ async function populateKnockoutRounds(client) {
       const homeTeam = homeSide === 'loser' ? getLoser(homeFeed) : getWinner(homeFeed);
       const awayTeam = awaySide === 'loser' ? getLoser(awayFeed) : getWinner(awayFeed);
 
-      if (!homeTeam || !awayTeam) continue; // partido(s) previo(s) aún sin ganador
+      if (!homeTeam && !awayTeam) continue; // ningún partido previo tiene ganador aún
 
-      console.log(`[bracket] ${entry.match} (${target.phase}): ${homeTeam} vs ${awayTeam}`);
-      updates.push({
-        sql: 'UPDATE matches SET home = ?, away = ? WHERE id = ?',
-        args: [homeTeam, awayTeam, entry.match],
-      });
+      // Poblar solo el lado que ya se conoce si el otro aún no está listo
+      if (homeTeam && awayTeam) {
+        console.log(`[bracket] ${entry.match} (${target.phase}): ${homeTeam} vs ${awayTeam}`);
+        updates.push({ sql: 'UPDATE matches SET home = ?, away = ? WHERE id = ?', args: [homeTeam, awayTeam, entry.match] });
+      } else if (homeTeam && target.home === null) {
+        console.log(`[bracket] ${entry.match} (${target.phase}): ${homeTeam} vs ? (pendiente)`);
+        updates.push({ sql: 'UPDATE matches SET home = ? WHERE id = ?', args: [homeTeam, entry.match] });
+      } else if (awayTeam && target.away === null) {
+        console.log(`[bracket] ${entry.match} (${target.phase}): ? vs ${awayTeam} (pendiente)`);
+        updates.push({ sql: 'UPDATE matches SET away = ? WHERE id = ?', args: [awayTeam, entry.match] });
+      }
     }
   }
 
