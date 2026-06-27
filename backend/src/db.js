@@ -193,6 +193,22 @@ async function runMigrations() {
     sql: `UPDATE users SET display_name = 'Christian' WHERE username = 'christian' AND display_name = 'Cristiano'`,
     args: [],
   });
+
+  // Resetea los 4 partidos R32 que el bracket-populator llenó con el bracket-config.json incorrecto.
+  // El bracket fue corregido el 2026-06-27: los emparejamientos 1A/2B, 1C/2D, 1E/2F, 1G/2H eran erróneos.
+  // Idempotente: WHERE filtra solo los valores incorrectos exactos. Seguro re-ejecutar.
+  const wrongR32Resets = [
+    ['R32_073', 'Mexico', 'Canada'],
+    ['R32_074', 'Brazil', 'Australia'],
+    ['R32_075', 'Germany', 'Japan'],
+    ['R32_076', 'Belgium', 'Cape Verde'],
+  ];
+  for (const [id, home, away] of wrongR32Resets) {
+    await client.execute({
+      sql: `UPDATE matches SET home = NULL, away = NULL WHERE id = ? AND home = ? AND away = ?`,
+      args: [id, home, away],
+    });
+  }
 }
 
 module.exports = { client, initDb };
