@@ -37,11 +37,18 @@ async function populateBracket(client) {
     return { populated: false, reason: 'grupos_incompletos' };
   }
 
-  // 2. Leer partidos de R32 para saber cuáles ya tienen home (idempotencia por partido)
+  // 2. Leer partidos de R32 para saber cuáles ya están completos o parcialmente poblados
   const { rows: r32Rows } = await client.execute(
-    `SELECT id, home FROM matches WHERE phase = 'Dieciseisavos'`
+    `SELECT id, home, away FROM matches WHERE phase = 'Dieciseisavos'`
   );
-  const alreadyPopulated = new Set(r32Rows.filter((r) => r.home !== null).map((r) => r.id));
+  // Completamente poblados: home Y away definidos → saltar
+  const fullyPopulated = new Set(
+    r32Rows.filter((r) => r.home !== null && r.away !== null).map((r) => r.id)
+  );
+  // Parcialmente poblados: home definido pero away null (esperando al 3ro)
+  const partialHome = new Set(
+    r32Rows.filter((r) => r.home !== null && r.away === null).map((r) => r.id)
+  );
 
   // 3. Leer todos los partidos de Grupos
   const { rows: matches } = await client.execute(
@@ -121,12 +128,36 @@ async function populateBracket(client) {
 
   for (const [matchId, slots] of Object.entries(bracketConfig)) {
     if (matchId.startsWith('_')) continue;
-    if (alreadyPopulated.has(matchId)) continue; // ya tiene equipos, no tocar
+    if (fullyPopulated.has(matchId)) continue; // ambos equipos ya definidos
 
     const needsThird = slots.home === '3rd' || slots.away === '3rd';
-    // Los slots con '3rd' solo se pueden resolver cuando TODOS los grupos terminaron
-    if (needsThird && !allGroupsDone) continue;
 
+    // Caso: home ya definido, falta solo el 3ro (se completa cuando todos los grupos terminan)
+    if (partialHome.has(matchId)) {
+      if (!allGroupsDone) continue; // bestThirds aún vacío, esperar
+      const thirdTeam = bestThirds[thirdIndex++];
+      if (!thirdTeam) continue;
+      console.log(`[bracket] ${matchId}: completando con 3ro → ${thirdTeam}`);
+      updates.push({ sql: 'UPDATE matches SET away = ? WHERE id = ?', args: [thirdTeam.toUpperCase(), matchId] });
+      continue;
+    }
+
+    // Caso: partido con slot 3rd y grupos aún incompletos → poblar solo el lado conocido
+    if (needsThird && !allGroupsDone) {
+      const knownIsHome = slots.home !== '3rd';
+      const knownSlot = knownIsHome ? slots.home : slots.away;
+      const knownTeam = positions[knownSlot] ?? null;
+      if (!knownTeam) continue; // el grupo referenciado aún no terminó
+      console.log(`[bracket] ${matchId}: ${knownTeam} vs ? (3ro pendiente)`);
+      if (knownIsHome) {
+        updates.push({ sql: 'UPDATE matches SET home = ? WHERE id = ?', args: [knownTeam.toUpperCase(), matchId] });
+      } else {
+        updates.push({ sql: 'UPDATE matches SET away = ? WHERE id = ?', args: [knownTeam.toUpperCase(), matchId] });
+      }
+      continue;
+    }
+
+    // Caso normal: ambos lados pueden resolverse ahora
     const resolveSlot = (slot) => {
       if (slot === '3rd') {
         if (thirdIndex >= bestThirds.length) return null;
