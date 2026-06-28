@@ -1,0 +1,1 @@
+var a=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];function i(e){let t=new Date(new Date(e).getTime()+-144e5),n=String(t.getUTCHours()).padStart(2,"0"),o=String(t.getUTCMinutes()).padStart(2,"0");return{date:`${t.getUTCDate()} ${a[t.getUTCMonth()]}`,time:`${n}:${o}`}}export{i as a};
