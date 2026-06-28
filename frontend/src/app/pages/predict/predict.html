@@ -102,7 +102,7 @@
               class="btn-advance"
               [class.selected]="draftFor(match.id).advance === 'home'"
               [disabled]="isMatchSealedForBetting(match)"
-              (click)="setDraftAdvance(match.id, draftFor(match.id).advance === 'home' ? '' : 'home')"
+              (click)="saveAdvance(match, 'home')"
             >
               @if (flagUrl(match.home)) { <img class="flag-sm" [src]="flagUrl(match.home)" alt="" /> }
               {{ match.home ?? 'Local' }}
@@ -112,7 +112,7 @@
               class="btn-advance"
               [class.selected]="draftFor(match.id).advance === 'away'"
               [disabled]="isMatchSealedForBetting(match)"
-              (click)="setDraftAdvance(match.id, draftFor(match.id).advance === 'away' ? '' : 'away')"
+              (click)="saveAdvance(match, 'away')"
             >
               @if (flagUrl(match.away)) { <img class="flag-sm" [src]="flagUrl(match.away)" alt="" /> }
               {{ match.away ?? 'Visitante' }}

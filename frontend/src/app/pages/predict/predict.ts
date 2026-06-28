@@ -146,6 +146,14 @@ export class Predict {
     this.draft.update((d) => ({ ...d, [matchId]: { ...this.draftFor(matchId), advance: value } }));
   }
 
+  async saveAdvance(match: Match, value: string): Promise<void> {
+    const current = this.draftFor(match.id).advance;
+    this.setDraftAdvance(match.id, current === value ? '' : value);
+    if (this.predictions()[match.id] !== undefined) {
+      await this.save(match);
+    }
+  }
+
   saveBtnLabel(matchId: string): string {
     if (this.predictions()[matchId] === undefined) return 'Guardar';
     const count = this.changeCount()[matchId] ?? 0;
