@@ -54,6 +54,9 @@
             <div class="pred">
               <div class="tag">{{ p.displayName }}</div>
               <div class="pred-score">{{ p.home }}–{{ p.away }}</div>
+              @if (isKnockout(match.phase) && p.advance) {
+                <div class="tag">⬆️ {{ p.advance === 'home' ? match.home : match.away }}</div>
+              }
             </div>
           } @empty {
             <span class="tag">Nadie pronosticó este partido</span>

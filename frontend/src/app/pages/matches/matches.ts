@@ -7,7 +7,9 @@ import { kickoffToBolivia } from '../../core/utils';
 
 const PHASES = ['Grupos', 'Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final'];
 
-type AllPredictions = Record<string, Record<string, { displayName: string; home: number; away: number }>>;
+type AllPredictions = Record<string, Record<string, { displayName: string; home: number; away: number; advance: string | null }>>;
+
+const KNOCKOUT_PHASES = new Set(['Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final']);
 
 @Component({
   selector: 'app-matches',
@@ -71,6 +73,10 @@ export class Matches {
 
   isPredictionVisible(_match: Match): boolean {
     return true;
+  }
+
+  isKnockout(phase: string): boolean {
+    return KNOCKOUT_PHASES.has(phase);
   }
 
   predictionsFor(matchId: string) {
