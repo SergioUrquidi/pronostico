@@ -51,10 +51,10 @@ initDb()
     app.listen(PORT, () => {
       console.log(`Pronostico API escuchando en puerto ${PORT}`);
       startAutoSync(client, 5 * 60 * 1000); // sync cada 5 min
-      if (process.env.WHATSAPP_API_KEY && process.env.WA_GROUP_ID) {
+      if (process.env.WHATSAPP_API_KEY && process.env.WA_PHONE_NUMBER) {
         initWhatsApp().catch((err) => console.error('[whatsapp] Error al iniciar:', err.message));
       } else {
-        console.log('[whatsapp] WHATSAPP_API_KEY o WA_GROUP_ID no configurados — modulo desactivado');
+        console.log('[whatsapp] WHATSAPP_API_KEY o WA_PHONE_NUMBER no configurados — modulo desactivado');
       }
     });
   })
