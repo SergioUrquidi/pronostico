@@ -1,4 +1,5 @@
 const { client: dbClient } = require('../db');
+const { calcScore, calcAdvanceScore } = require('../scoring');
 
 let sock = null;
 let qrData = null;
@@ -100,6 +101,104 @@ const silentLogger = {
   child: () => silentLogger,
 };
 
+// ─── Incoming message handler ─────────────────────────────────────────────────
+
+const KNOCKOUT_PHASES = new Set(['Dieciseisavos', 'Octavos', 'Cuartos', 'Semifinal', 'TercerPuesto', 'Final']);
+
+async function getScoreMessage(user) {
+  const [{ rows: allUsers }, { rows: matches }, { rows: allPreds }] = await Promise.all([
+    dbClient.execute("SELECT id FROM users WHERE role = 'player'"),
+    dbClient.execute('SELECT id, phase, home_score, away_score, advance_winner FROM matches WHERE home_score IS NOT NULL'),
+    dbClient.execute('SELECT user_id, match_id, home_pred, away_pred, advance_pred FROM predictions'),
+  ]);
+
+  const predMap = {};
+  for (const p of allPreds) predMap[`${p.user_id}_${p.match_id}`] = p;
+
+  const calcTotal = (uid) => {
+    let pts = 0;
+    for (const m of matches) {
+      const pred = predMap[`${uid}_${m.id}`];
+      if (!pred) continue;
+      pts += calcScore(pred.home_pred, pred.away_pred, m.home_score, m.away_score);
+      if (KNOCKOUT_PHASES.has(m.phase) && pred.advance_pred) {
+        pts += calcAdvanceScore(pred.advance_pred, m.home_score, m.away_score, m.advance_winner);
+      }
+    }
+    return pts;
+  };
+
+  const scores = allUsers.map((u) => ({ id: u.id, pts: calcTotal(u.id) }));
+  scores.sort((a, b) => b.pts - a.pts);
+  const myScore = scores.find((s) => s.id === user.id);
+  const rank = scores.indexOf(myScore) + 1;
+
+  return `*${user.display_name}*\nPuntos: ${myScore.pts}\nPosicion: ${rank} de ${allUsers.length}`;
+}
+
+async function getMatchesMessage() {
+  const now = new Date();
+  const start = new Date(now);
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(now);
+  end.setUTCHours(23, 59, 59, 999);
+
+  const { rows } = await dbClient.execute({
+    sql: `SELECT home, away, time_local, home_score, away_score FROM matches
+          WHERE kickoff_at_utc >= ? AND kickoff_at_utc <= ?
+            AND home IS NOT NULL AND away IS NOT NULL
+          ORDER BY kickoff_at_utc`,
+    args: [start.toISOString(), end.toISOString()],
+  });
+
+  if (rows.length === 0) return 'No hay partidos hoy.';
+
+  const lines = rows.map((m) => {
+    const result = m.home_score !== null ? `${m.home_score}-${m.away_score}` : m.time_local;
+    return `• ${m.home} vs ${m.away}  ${result}`;
+  });
+
+  return `*Partidos de hoy*\n${lines.join('\n')}`;
+}
+
+async function handleIncomingMessage(msg) {
+  const jid = msg.key.remoteJid;
+  if (!jid || jid.endsWith('@g.us') || jid === 'status@broadcast') return;
+  if (msg.key.fromMe) return;
+
+  const phone = jid.replace('@s.whatsapp.net', '');
+  const text = (
+    msg.message?.conversation ||
+    msg.message?.extendedTextMessage?.text ||
+    ''
+  ).trim().toLowerCase();
+  if (!text) return;
+
+  const { rows } = await dbClient.execute({
+    sql: "SELECT id, display_name FROM users WHERE wa_number = ? AND role = 'player'",
+    args: [phone],
+  });
+  if (!rows[0]) return;
+
+  const user = rows[0];
+  let reply;
+
+  try {
+    if (text === 'puntaje' || text === 'puntos') {
+      reply = await getScoreMessage(user);
+    } else if (text === 'partidos' || text === 'hoy') {
+      reply = await getMatchesMessage();
+    } else if (text === 'ayuda' || text === 'help') {
+      reply = `Hola ${user.display_name}! Comandos:\n• *puntaje* — tu puntuacion y posicion\n• *partidos* — partidos de hoy\n• *ayuda* — esta lista`;
+    } else {
+      reply = `No entiendo ese comando. Escribi *ayuda* para ver que puedo hacer.`;
+    }
+    await sock.sendMessage(jid, { text: reply });
+  } catch (err) {
+    console.error('[whatsapp] Error respondiendo a', phone, ':', err.message);
+  }
+}
+
 async function initWhatsApp() {
   const { default: makeWASocket, DisconnectReason, fetchLatestBaileysVersion } = await getBaileys();
 
@@ -148,6 +247,11 @@ async function initWhatsApp() {
   });
 
   sock = socket;
+
+  socket.ev.on('messages.upsert', ({ messages: msgs, type }) => {
+    if (type !== 'notify') return;
+    for (const msg of msgs) handleIncomingMessage(msg).catch(() => {});
+  });
 
   // Pairing por numero de telefono si la sesion no esta registrada
   const phone = process.env.WA_PHONE_NUMBER;
