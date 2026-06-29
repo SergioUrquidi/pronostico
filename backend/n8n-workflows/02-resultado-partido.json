@@ -1,0 +1,59 @@
+{
+  "name": "02 - Resultado de Partido",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "resultado-partido",
+        "responseMode": "onReceived",
+        "responseData": ""
+      },
+      "id": "webhook-resultados",
+      "name": "Webhook Resultado",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "resultado-partido"
+    },
+    {
+      "parameters": {
+        "jsCode": "const matches = $input.first().json.body?.matches || $input.first().json.matches || [];\n\nconst lines = matches.map(m => {\n  const home = m.home || '';\n  const away = m.away || '';\n  const hs = m.home_score;\n  const as_ = m.away_score;\n  const phase = m.phase || '';\n  let result = `${home} ${hs} - ${as_} ${away}`;\n  if (phase && phase !== 'Grupos') result += ` (${phase})`;\n  return result;\n});\n\nif (lines.length === 0) return [];\n\nconst message = `Resultados Copa del Mundo 2026\\n\\n${lines.join('\\n')}\\n\\nActualizá tus pronósticos en la app!`;\n\nreturn [{ json: { message } }];"
+      },
+      "id": "build-result-message",
+      "name": "Armar mensaje resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://TU-BACKEND.onrender.com/api/whatsapp/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "TU-WHATSAPP-API-KEY" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "message", "value": "={{ $json.message }}" }
+          ]
+        }
+      },
+      "id": "send-result",
+      "name": "Enviar resultado al grupo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Resultado": { "main": [[{ "node": "Armar mensaje resultado", "type": "main", "index": 0 }]] },
+    "Armar mensaje resultado": { "main": [[{ "node": "Enviar resultado al grupo", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "timezone": "America/La_Paz", "executionOrder": "v1" }
+}

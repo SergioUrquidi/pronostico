@@ -1,0 +1,95 @@
+{
+  "name": "03 - Horario Diario 8am",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 12 * * *" }]
+        }
+      },
+      "id": "schedule-8am",
+      "name": "Todos los dias 8am BOL",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://TU-BACKEND.onrender.com/api/notifications/today",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "x-api-key", "value": "TU-WHATSAPP-API-KEY" }]
+        }
+      },
+      "id": "get-today",
+      "name": "Obtener partidos de hoy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "check-today",
+              "leftValue": "={{ $json.matches.length }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-today",
+      "name": "Hay partidos hoy?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const matches = $input.first().json.matches;\n\nconst lines = matches.map(m => {\n  const home = m.home || '';\n  const away = m.away || '';\n  const time = m.time_local || '';\n  const hs = m.home_score;\n  const as_ = m.away_score;\n  const played = hs !== null && hs !== undefined;\n  if (played) return `${home} ${hs}-${as_} ${away} (jugado)`;\n  return `${home} vs ${away} — ${time} BOL`;\n});\n\nconst message = `Buenos dias! Partidos de hoy Copa del Mundo 2026\\n\\n${lines.join('\\n')}\\n\\nNo olvides apostar antes del partido!`;\n\nreturn [{ json: { message } }];"
+      },
+      "id": "build-schedule",
+      "name": "Armar horario del dia",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 240]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://TU-BACKEND.onrender.com/api/whatsapp/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "TU-WHATSAPP-API-KEY" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "message", "value": "={{ $json.message }}" }
+          ]
+        }
+      },
+      "id": "send-schedule",
+      "name": "Enviar horario al grupo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 240]
+    }
+  ],
+  "connections": {
+    "Todos los dias 8am BOL": { "main": [[{ "node": "Obtener partidos de hoy", "type": "main", "index": 0 }]] },
+    "Obtener partidos de hoy": { "main": [[{ "node": "Hay partidos hoy?", "type": "main", "index": 0 }]] },
+    "Hay partidos hoy?": { "main": [[{ "node": "Armar horario del dia", "type": "main", "index": 0 }]] },
+    "Armar horario del dia": { "main": [[{ "node": "Enviar horario al grupo", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "timezone": "America/La_Paz", "executionOrder": "v1" }
+}

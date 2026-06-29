@@ -1,0 +1,118 @@
+{
+  "name": "01 - Recordatorio Apuestas",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "minutes", "minutesInterval": 30 }]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Cada 30 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://TU-BACKEND.onrender.com/api/notifications/upcoming",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "x-api-key", "value": "TU-WHATSAPP-API-KEY" }]
+        }
+      },
+      "id": "get-upcoming",
+      "name": "Obtener partidos proximos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "check-matches",
+              "leftValue": "={{ $json.matches.length }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-matches",
+      "name": "Hay partidos proximos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const matches = $input.first().json.matches;\nconst sends = [];\n\nfor (const match of matches) {\n  for (const player of (match.missing || [])) {\n    if (!player.waNumber) continue;\n    sends.push({\n      to: player.waNumber,\n      message: `Che ${player.name}! Faltan menos de 2 horas para ${match.home} vs ${match.away} (${match.time_local} BOL) y todavia no apostaste. No te quedes afuera!`\n    });\n  }\n}\n\nreturn sends.map(s => ({ json: s }));"
+      },
+      "id": "build-messages",
+      "name": "Armar mensajes individuales",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 240]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "check-wa",
+              "leftValue": "={{ $json.to }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-wa-number",
+      "name": "Tiene numero WA?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 240]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://TU-BACKEND.onrender.com/api/whatsapp/send",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key", "value": "TU-WHATSAPP-API-KEY" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "message", "value": "={{ $json.message }}" },
+            { "name": "to", "value": "={{ $json.to }}" }
+          ]
+        }
+      },
+      "id": "send-reminder",
+      "name": "Enviar recordatorio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 200]
+    }
+  ],
+  "connections": {
+    "Cada 30 minutos": { "main": [[{ "node": "Obtener partidos proximos", "type": "main", "index": 0 }]] },
+    "Obtener partidos proximos": { "main": [[{ "node": "Hay partidos proximos?", "type": "main", "index": 0 }]] },
+    "Hay partidos proximos?": { "main": [[{ "node": "Armar mensajes individuales", "type": "main", "index": 0 }]] },
+    "Armar mensajes individuales": { "main": [[{ "node": "Tiene numero WA?", "type": "main", "index": 0 }]] },
+    "Tiene numero WA?": { "main": [[{ "node": "Enviar recordatorio", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "timezone": "America/La_Paz", "executionOrder": "v1" }
+}
