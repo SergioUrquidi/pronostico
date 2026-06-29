@@ -16,10 +16,10 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://TU-BACKEND.onrender.com/api/notifications/upcoming",
+        "url": "https://ronostico-api.onrender.com/api/notifications/upcoming",
         "sendHeaders": true,
         "headerParameters": {
-          "parameters": [{ "name": "x-api-key", "value": "TU-WHATSAPP-API-KEY" }]
+          "parameters": [{ "name": "x-api-key", "value": "21Yh0qI4rPtwGd5s7Wi3euOJHxn9ogCSp8kfFL6MVlDUyTca" }]
         }
       },
       "id": "get-upcoming",
@@ -83,11 +83,11 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://TU-BACKEND.onrender.com/api/whatsapp/send",
+        "url": "https://ronostico-api.onrender.com/api/whatsapp/send",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "x-api-key", "value": "TU-WHATSAPP-API-KEY" },
+            { "name": "x-api-key", "value": "21Yh0qI4rPtwGd5s7Wi3euOJHxn9ogCSp8kfFL6MVlDUyTca" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -116,3 +116,4 @@
   "active": true,
   "settings": { "timezone": "America/La_Paz", "executionOrder": "v1" }
 }
+
