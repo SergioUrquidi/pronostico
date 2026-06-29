@@ -153,6 +153,8 @@ async function runMigrations() {
     ['G066','2026-06-27T00:00:00Z','2026-06-27T02:00:00Z'],
     ['G069','2026-06-28T02:00:00Z','2026-06-28T03:00:00Z'],
     ['G070','2026-06-28T02:00:00Z','2026-06-28T03:00:00Z'],
+    // R32_076 Houston: noon CDT (12:00) = 17:00 UTC, fixture tenía 13:00 CDT = 18:00 UTC (1h tarde)
+    ['R32_076','2026-06-29T17:00:00Z','2026-06-29T18:00:00Z'],
   ];
   for (const [id, newUtc, oldUtc] of kickoffFixes) {
     await client.execute({

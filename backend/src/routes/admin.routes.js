@@ -149,6 +149,23 @@ router.get('/sync-status', (_req, res) => {
   res.json(getSyncStatus());
 });
 
+// Audit: predictions updated after a given UTC datetime (format: '2026-06-29 16:50:00')
+router.get('/audit/recent-predictions', async (req, res) => {
+  const since = req.query.since || '2026-01-01 00:00:00';
+  const { rows } = await client.execute({
+    sql: `SELECT p.updated_at, u.username, u.display_name,
+                 m.id as match_id, m.kickoff_at_utc,
+                 p.home_pred, p.away_pred
+          FROM predictions p
+          JOIN users u ON p.user_id = u.id
+          JOIN matches m ON p.match_id = m.id
+          WHERE p.updated_at > ?
+          ORDER BY p.updated_at DESC`,
+    args: [since],
+  });
+  res.json(rows);
+});
+
 // One-time historical data seed — clears the guard key first so it always re-runs
 router.post('/seed-historical', async (_req, res) => {
   try {
