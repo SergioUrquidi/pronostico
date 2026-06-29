@@ -210,4 +210,32 @@ router.get('/predictions/player/:username', async (req, res) => {
   });
 });
 
+// Guardar numero de WhatsApp de un jugador (sin + ni espacios, ej: 59172003024)
+router.put('/users/:username/wa-number', async (req, res) => {
+  const { username } = req.params;
+  const { waNumber } = req.body || {};
+  if (!waNumber || !/^\d{7,15}$/.test(waNumber)) {
+    return res.status(400).json({ error: 'waNumber invalido — solo digitos, sin + (ej: 59172003024)' });
+  }
+  const { rows } = await client.execute({
+    sql: "SELECT id FROM users WHERE username = ? AND role = 'player'",
+    args: [username],
+  });
+  if (!rows[0]) return res.status(404).json({ error: 'Jugador no encontrado' });
+
+  await client.execute({
+    sql: 'UPDATE users SET wa_number = ? WHERE username = ?',
+    args: [waNumber, username],
+  });
+  res.json({ ok: true });
+});
+
+// Ver todos los jugadores con su wa_number
+router.get('/users/wa-numbers', async (_req, res) => {
+  const { rows } = await client.execute(
+    "SELECT username, display_name, wa_number FROM users WHERE role = 'player' ORDER BY display_name"
+  );
+  res.json(rows.map((r) => ({ username: r.username, name: r.display_name, waNumber: r.wa_number })));
+});
+
 module.exports = router;

@@ -53,10 +53,10 @@ router.get('/groups', requireApiKey, async (_req, res) => {
 });
 
 router.post('/send', requireApiKey, rateLimitSend, async (req, res) => {
-  const { message } = req.body;
+  const { message, to } = req.body;
   if (!message) return res.status(400).json({ error: 'Falta campo: message' });
   try {
-    await sendMessage(message);
+    await sendMessage(message, to || null);
     res.json({ ok: true });
   } catch (err) {
     console.error('[whatsapp] Error al enviar:', err.message);

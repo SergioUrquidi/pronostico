@@ -111,6 +111,7 @@ async function runMigrations() {
   const alterations = [
     'ALTER TABLE predictions ADD COLUMN advance_pred TEXT',
     'ALTER TABLE matches ADD COLUMN advance_winner TEXT',
+    'ALTER TABLE users ADD COLUMN wa_number TEXT',
   ];
   for (const sql of alterations) {
     try {

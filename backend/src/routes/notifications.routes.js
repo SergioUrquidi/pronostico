@@ -30,7 +30,7 @@ router.get('/upcoming', requireApiKey, async (_req, res) => {
     if (matches.length === 0) return res.json({ matches: [] });
 
     const { rows: allPlayers } = await client.execute(
-      `SELECT id, display_name FROM users WHERE role = 'player'`
+      `SELECT id, display_name, wa_number FROM users WHERE role = 'player'`
     );
 
     const result = [];
@@ -42,7 +42,7 @@ router.get('/upcoming', requireApiKey, async (_req, res) => {
       const predictedIds = new Set(predicted.map((p) => p.user_id));
       const missing = allPlayers
         .filter((p) => !predictedIds.has(p.id))
-        .map((p) => p.display_name);
+        .map((p) => ({ name: p.display_name, waNumber: p.wa_number }));
       result.push({ ...match, missing });
     }
 

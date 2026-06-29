@@ -162,11 +162,20 @@ async function initWhatsApp() {
   }
 }
 
-async function sendMessage(message) {
+// to: numero de telefono (ej: 59172003024) o ID de grupo (ej: 120363XXX@g.us)
+// Si no se pasa, usa WA_GROUP_ID del entorno
+async function sendMessage(message, to = null) {
   if (!sock || !isReady) throw new Error('WhatsApp no conectado');
-  const groupId = process.env.WA_GROUP_ID;
-  if (!groupId) throw new Error('WA_GROUP_ID no configurado');
-  await sock.sendMessage(groupId, { text: message });
+  let destination = to;
+  if (!destination) {
+    destination = process.env.WA_GROUP_ID;
+    if (!destination) throw new Error('WA_GROUP_ID no configurado');
+  }
+  // Si es numero de telefono sin @, agregar sufijo de WhatsApp
+  if (!destination.includes('@')) {
+    destination = `${destination}@s.whatsapp.net`;
+  }
+  await sock.sendMessage(destination, { text: message });
 }
 
 function getStatus() {
