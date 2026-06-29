@@ -6,6 +6,9 @@ let qrData = null;
 let pairingCode = null;
 let isReady = false;
 let baileys = null;
+let lastError = null;
+let initCalled = false;
+let credsRegistered = null;
 
 async function getBaileys() {
   if (!baileys) baileys = await import('@whiskeysockets/baileys');
@@ -200,10 +203,13 @@ async function handleIncomingMessage(msg) {
 }
 
 async function initWhatsApp() {
+  initCalled = true;
   const { default: makeWASocket, DisconnectReason, fetchLatestBaileysVersion } = await getBaileys();
 
   const { version } = await fetchLatestBaileysVersion();
   const { state, saveCreds } = await useTursoAuthState();
+  credsRegistered = state.creds.registered;
+  console.log('[whatsapp] initWhatsApp — version:', version, '— creds.registered:', state.creds.registered);
 
   const socket = makeWASocket({
     version,
@@ -260,8 +266,10 @@ async function initWhatsApp() {
     try {
       const code = await socket.requestPairingCode(phone);
       pairingCode = code;
+      lastError = null;
       console.log('[whatsapp] PAIRING CODE:', code, '— ingresar en WhatsApp > Dispositivos vinculados > Vincular con numero de telefono');
     } catch (err) {
+      lastError = err.message;
       console.log('[whatsapp] Error solicitando pairing code:', err.message);
     }
   }
@@ -284,7 +292,7 @@ async function sendMessage(message, to = null) {
 }
 
 function getStatus() {
-  return { isReady, hasQr: !!qrData, hasPairingCode: !!pairingCode };
+  return { isReady, hasQr: !!qrData, hasPairingCode: !!pairingCode, initCalled, credsRegistered, lastError };
 }
 
 function getQr() {
