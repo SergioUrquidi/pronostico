@@ -222,14 +222,29 @@ async function initWhatsApp() {
 
   socket.ev.on('creds.update', saveCreds);
 
+  const phone = process.env.WA_PHONE_NUMBER;
+  let pairingRequested = false;
+
   socket.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
       qrData = qr;
       isReady = false;
-      console.log('[whatsapp] QR disponible — ver en GET /api/whatsapp/qr');
-      console.log('[whatsapp] QR data:', qr);
+      console.log('[whatsapp] QR disponible');
+      // Solicitar pairing por numero si aun no se hizo (QR indica que la conexion esta lista)
+      if (!state.creds.registered && phone && !pairingRequested && !pairingCode) {
+        pairingRequested = true;
+        try {
+          const code = await socket.requestPairingCode(phone);
+          pairingCode = code;
+          lastError = null;
+          console.log('[whatsapp] PAIRING CODE:', code, '— ingresar en WhatsApp > Dispositivos vinculados > Vincular con numero de telefono');
+        } catch (err) {
+          lastError = (err.stack || err.message).substring(0, 500);
+          console.log('[whatsapp] Error solicitando pairing code:', err.stack || err.message);
+        }
+      }
     }
 
     if (connection === 'open') {
@@ -258,20 +273,6 @@ async function initWhatsApp() {
     if (type !== 'notify') return;
     for (const msg of msgs) handleIncomingMessage(msg).catch(() => {});
   });
-
-  // Pairing por numero de telefono — se solicita ANTES de que el socket abra
-  const phone = process.env.WA_PHONE_NUMBER;
-  if (!state.creds.registered && phone) {
-    try {
-      const code = await socket.requestPairingCode(phone);
-      pairingCode = code;
-      lastError = null;
-      console.log('[whatsapp] PAIRING CODE:', code, '— ingresar en WhatsApp > Dispositivos vinculados > Vincular con numero de telefono');
-    } catch (err) {
-      lastError = (err.stack || err.message).substring(0, 500);
-      console.log('[whatsapp] Error solicitando pairing code:', err.stack || err.message);
-    }
-  }
 }
 
 // to: numero de telefono (ej: 59172003024) o ID de grupo (ej: 120363XXX@g.us)
