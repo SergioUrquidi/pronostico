@@ -301,4 +301,14 @@ async function getGroups() {
   return Object.values(groups).map((g) => ({ id: g.id, name: g.subject }));
 }
 
-module.exports = { initWhatsApp, sendMessage, getStatus, getQr, getPairingCode, getGroups };
+async function refreshPairingCode() {
+  if (!sock) throw new Error('WhatsApp no inicializado');
+  const phone = process.env.WA_PHONE_NUMBER;
+  if (!phone) throw new Error('WA_PHONE_NUMBER no configurado');
+  const code = await sock.requestPairingCode(phone);
+  pairingCode = code;
+  console.log('[whatsapp] PAIRING CODE (refresh):', code);
+  return code;
+}
+
+module.exports = { initWhatsApp, sendMessage, getStatus, getQr, getPairingCode, getGroups, refreshPairingCode };

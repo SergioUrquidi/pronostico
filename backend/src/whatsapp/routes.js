@@ -1,5 +1,5 @@
 const express = require('express');
-const { sendMessage, getStatus, getQr, getPairingCode, getGroups } = require('./client');
+const { sendMessage, getStatus, getQr, getPairingCode, getGroups, refreshPairingCode } = require('./client');
 
 const router = express.Router();
 
@@ -41,6 +41,15 @@ router.get('/pairing-code', requireApiKey, (_req, res) => {
   const code = getPairingCode();
   if (!code) return res.status(404).json({ error: 'Sin pairing code — ya conectado o configure WA_PHONE_NUMBER' });
   res.json({ code });
+});
+
+router.post('/pairing-code/refresh', requireApiKey, async (_req, res) => {
+  try {
+    const code = await refreshPairingCode();
+    res.json({ code });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 router.get('/groups', requireApiKey, async (_req, res) => {
