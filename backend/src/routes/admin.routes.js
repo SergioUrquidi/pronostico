@@ -214,8 +214,8 @@ router.get('/predictions/player/:username', async (req, res) => {
 router.put('/users/:username/wa-number', async (req, res) => {
   const { username } = req.params;
   const { waNumber } = req.body || {};
-  if (!waNumber || !/^\d{7,15}$/.test(waNumber)) {
-    return res.status(400).json({ error: 'waNumber invalido — solo digitos, sin + (ej: 59172003024)' });
+  if (!waNumber || !/^\d{10,15}$/.test(waNumber)) {
+    return res.status(400).json({ error: 'waNumber invalido — incluir codigo de pais, sin + (ej: 59172003024)' });
   }
   const { rows } = await client.execute({
     sql: "SELECT id FROM users WHERE username = ? AND role = 'player'",

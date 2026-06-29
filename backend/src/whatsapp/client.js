@@ -96,6 +96,7 @@ const silentLogger = {
   info: () => {},
   debug: () => {},
   trace: () => {},
+  isLevelEnabled: () => false,
   child: () => silentLogger,
 };
 
