@@ -196,12 +196,32 @@ async function runMigrations() {
 
   // Resetea todos los Dieciseisavos para que el bracket-populator los repueble
   // con el bracket-config.json corregido el 2026-06-27.
-  // Seguro: ningún R32 tiene resultados aún (fase inicia 2026-06-28).
+  // Seguro: home_score IS NULL protege los partidos ya disputados.
   // Idempotente: poner NULL donde ya es NULL no tiene efecto.
   await client.execute(
     `UPDATE matches SET home = NULL, away = NULL
      WHERE phase = 'Dieciseisavos' AND home_score IS NULL AND away_score IS NULL`
   );
+
+  // Corrige los 5 partidos R32 con terceros de grupo equivocados (bracket-config.json
+  // usaba "3rd" generico; el populator asignaba por ranking global en lugar de por
+  // el grupo especifico del bracket oficial FIFA 2026).
+  // Fix: bracket-config.json ahora usa codigos especificos (3D, 3K, 3I, 3J, 3L).
+  // Esta migracion aplica los equipos correctos inmediatamente sin esperar al sync.
+  // Idempotente: WHERE home_score IS NULL protege partidos ya disputados.
+  const r32ThirdFixes = [
+    ['R32_074', 'ALEMANIA',       'PARAGUAY'],
+    ['R32_080', 'INGLATERRA',     'REP. DEL CONGO'],
+    ['R32_082', 'BELGICA',        'SENEGAL'],
+    ['R32_085', 'SUIZA',          'ARGELIA'],
+    ['R32_087', 'COLOMBIA',       'GHANA'],
+  ];
+  for (const [id, home, away] of r32ThirdFixes) {
+    await client.execute({
+      sql: `UPDATE matches SET home = ?, away = ? WHERE id = ? AND home_score IS NULL AND away_score IS NULL`,
+      args: [home, away, id],
+    });
+  }
 }
 
 module.exports = { client, initDb };
