@@ -259,18 +259,17 @@ async function initWhatsApp() {
     for (const msg of msgs) handleIncomingMessage(msg).catch(() => {});
   });
 
-  // Pairing por numero de telefono si la sesion no esta registrada
+  // Pairing por numero de telefono — se solicita ANTES de que el socket abra
   const phone = process.env.WA_PHONE_NUMBER;
   if (!state.creds.registered && phone) {
-    await new Promise((r) => setTimeout(r, 3000));
     try {
       const code = await socket.requestPairingCode(phone);
       pairingCode = code;
       lastError = null;
       console.log('[whatsapp] PAIRING CODE:', code, '— ingresar en WhatsApp > Dispositivos vinculados > Vincular con numero de telefono');
     } catch (err) {
-      lastError = err.message;
-      console.log('[whatsapp] Error solicitando pairing code:', err.message);
+      lastError = (err.stack || err.message).substring(0, 500);
+      console.log('[whatsapp] Error solicitando pairing code:', err.stack || err.message);
     }
   }
 }
