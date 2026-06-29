@@ -102,7 +102,7 @@ async function initDb() {
   if (configCount === 0) {
     await client.execute({
       sql: 'INSERT INTO config (key, value) VALUES (?, ?)',
-      args: ['lock_minutes_before_kickoff', '60'],
+      args: ['lock_minutes_before_kickoff', '10'],
     });
   }
 }

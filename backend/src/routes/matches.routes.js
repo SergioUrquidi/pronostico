@@ -10,7 +10,7 @@ async function getLockMinutes() {
     sql: 'SELECT value FROM config WHERE key = ?',
     args: ['lock_minutes_before_kickoff'],
   });
-  return rows[0] ? parseInt(rows[0].value, 10) : 60;
+  return rows[0] ? parseInt(rows[0].value, 10) : 10;
 }
 
 async function isLocked(kickoffAtUtc) {

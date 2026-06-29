@@ -96,7 +96,7 @@ router.get('/config', async (_req, res) => {
     sql: 'SELECT value FROM config WHERE key = ?',
     args: ['lock_minutes_before_kickoff'],
   });
-  res.json({ lockMinutesBeforeKickoff: rows[0] ? parseInt(rows[0].value, 10) : 60 });
+  res.json({ lockMinutesBeforeKickoff: rows[0] ? parseInt(rows[0].value, 10) : 10 });
 });
 
 router.put('/config', async (req, res) => {
