@@ -5,7 +5,24 @@ const { signToken, requireAuth } = require('../auth');
 
 const router = express.Router();
 
-router.post('/login', async (req, res) => {
+// Rate limit: max 10 intentos de login por IP cada 15 minutos
+const loginAttempts = new Map();
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX = 10;
+
+function checkLoginRateLimit(req, res, next) {
+  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+  const now = Date.now();
+  const attempts = (loginAttempts.get(ip) || []).filter((t) => t > now - LOGIN_WINDOW_MS);
+  if (attempts.length >= LOGIN_MAX) {
+    return res.status(429).json({ error: 'Demasiados intentos. Esperá 15 minutos.' });
+  }
+  attempts.push(now);
+  loginAttempts.set(ip, attempts);
+  next();
+}
+
+router.post('/login', checkLoginRateLimit, async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuario y clave son requeridos' });

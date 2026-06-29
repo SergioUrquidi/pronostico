@@ -49,7 +49,7 @@ router.get('/upcoming', requireApiKey, async (_req, res) => {
     res.json({ matches: result });
   } catch (err) {
     console.error('[notifications] Error /upcoming:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -73,7 +73,7 @@ router.get('/today', requireApiKey, async (_req, res) => {
     res.json({ matches });
   } catch (err) {
     console.error('[notifications] Error /today:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

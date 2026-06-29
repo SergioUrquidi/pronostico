@@ -48,7 +48,7 @@ router.get('/groups', requireApiKey, async (_req, res) => {
     const groups = await getGroups();
     res.json({ groups });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -60,7 +60,7 @@ router.post('/send', requireApiKey, rateLimitSend, async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('[whatsapp] Error al enviar:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

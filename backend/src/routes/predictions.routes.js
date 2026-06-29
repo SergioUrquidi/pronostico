@@ -96,8 +96,11 @@ router.get('/groups', requireAuth, async (req, res) => {
   res.json(byGroup);
 });
 
+const VALID_GROUPS = new Set(['A','B','C','D','E','F','G','H','I','J','K','L']);
+
 router.put('/groups/:group', requireAuth, async (req, res) => {
   const { group } = req.params;
+  if (!VALID_GROUPS.has(group)) return res.status(400).json({ error: 'Grupo invalido' });
   const { teams } = req.body || {};
 
   if (!Array.isArray(teams) || teams.length !== 2 || teams.some((t) => typeof t !== 'string' || !t.trim())) {

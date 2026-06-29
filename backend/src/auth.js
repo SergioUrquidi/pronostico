@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-cambiar-en-produccion';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error('JWT_SECRET no configurado — la app no puede arrancar sin un secreto seguro');
 
 function signToken(user) {
   return jwt.sign(
