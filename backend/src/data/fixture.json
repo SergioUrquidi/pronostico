@@ -896,8 +896,8 @@
     "away": null,
     "stadium": "Monterrey",
     "date_local": "29 junio",
-    "time_local": "21:00",
-    "kickoff_at_utc": "2026-06-30T03:00:00Z"
+    "time_local": "19:00",
+    "kickoff_at_utc": "2026-06-30T01:00:00Z"
   },
   {
     "id": "R32_076",
@@ -932,8 +932,8 @@
     "away": null,
     "stadium": "Dallas",
     "date_local": "30 junio",
-    "time_local": "13:00",
-    "kickoff_at_utc": "2026-06-30T18:00:00Z"
+    "time_local": "12:00",
+    "kickoff_at_utc": "2026-06-30T17:00:00Z"
   },
   {
     "id": "R32_079",
@@ -944,8 +944,8 @@
     "away": null,
     "stadium": "Ciudad de Mexico",
     "date_local": "30 junio",
-    "time_local": "21:00",
-    "kickoff_at_utc": "2026-07-01T03:00:00Z"
+    "time_local": "19:00",
+    "kickoff_at_utc": "2026-07-01T01:00:00Z"
   },
   {
     "id": "R32_080",
@@ -968,8 +968,8 @@
     "away": null,
     "stadium": "San Francisco",
     "date_local": "01 julio",
-    "time_local": "20:00",
-    "kickoff_at_utc": "2026-07-02T03:00:00Z"
+    "time_local": "17:00",
+    "kickoff_at_utc": "2026-07-02T00:00:00Z"
   },
   {
     "id": "R32_082",
@@ -980,8 +980,8 @@
     "away": null,
     "stadium": "Seattle",
     "date_local": "01 julio",
-    "time_local": "16:00",
-    "kickoff_at_utc": "2026-07-01T23:00:00Z"
+    "time_local": "13:00",
+    "kickoff_at_utc": "2026-07-01T20:00:00Z"
   },
   {
     "id": "R32_083",
@@ -1004,8 +1004,8 @@
     "away": null,
     "stadium": "Los Angeles",
     "date_local": "02 julio",
-    "time_local": "15:00",
-    "kickoff_at_utc": "2026-07-02T22:00:00Z"
+    "time_local": "12:00",
+    "kickoff_at_utc": "2026-07-02T19:00:00Z"
   },
   {
     "id": "R32_085",
@@ -1015,9 +1015,9 @@
     "home": null,
     "away": null,
     "stadium": "Vancouver",
-    "date_local": "03 julio",
-    "time_local": "23:00",
-    "kickoff_at_utc": "2026-07-04T06:00:00Z"
+    "date_local": "02 julio",
+    "time_local": "20:00",
+    "kickoff_at_utc": "2026-07-03T03:00:00Z"
   },
   {
     "id": "R32_086",
@@ -1040,8 +1040,8 @@
     "away": null,
     "stadium": "Kansas City",
     "date_local": "03 julio",
-    "time_local": "21:30",
-    "kickoff_at_utc": "2026-07-04T02:30:00Z"
+    "time_local": "20:30",
+    "kickoff_at_utc": "2026-07-04T01:30:00Z"
   },
   {
     "id": "R32_088",
@@ -1052,8 +1052,8 @@
     "away": null,
     "stadium": "Dallas",
     "date_local": "03 julio",
-    "time_local": "14:00",
-    "kickoff_at_utc": "2026-07-03T19:00:00Z"
+    "time_local": "13:00",
+    "kickoff_at_utc": "2026-07-03T18:00:00Z"
   },
   {
     "id": "OCTA_089",
@@ -1076,8 +1076,8 @@
     "away": null,
     "stadium": "Houston",
     "date_local": "04 julio",
-    "time_local": "13:00",
-    "kickoff_at_utc": "2026-07-04T18:00:00Z"
+    "time_local": "12:00",
+    "kickoff_at_utc": "2026-07-04T17:00:00Z"
   },
   {
     "id": "OCTA_091",
@@ -1100,8 +1100,8 @@
     "away": null,
     "stadium": "Ciudad de Mexico",
     "date_local": "05 julio",
-    "time_local": "20:00",
-    "kickoff_at_utc": "2026-07-06T02:00:00Z"
+    "time_local": "18:00",
+    "kickoff_at_utc": "2026-07-06T00:00:00Z"
   },
   {
     "id": "OCTA_093",
@@ -1112,8 +1112,8 @@
     "away": null,
     "stadium": "Dallas",
     "date_local": "06 julio",
-    "time_local": "15:00",
-    "kickoff_at_utc": "2026-07-06T20:00:00Z"
+    "time_local": "14:00",
+    "kickoff_at_utc": "2026-07-06T19:00:00Z"
   },
   {
     "id": "OCTA_094",
@@ -1124,8 +1124,8 @@
     "away": null,
     "stadium": "Seattle",
     "date_local": "06 julio",
-    "time_local": "20:00",
-    "kickoff_at_utc": "2026-07-07T03:00:00Z"
+    "time_local": "14:00",
+    "kickoff_at_utc": "2026-07-06T21:00:00Z"
   },
   {
     "id": "OCTA_095",
@@ -1148,8 +1148,8 @@
     "away": null,
     "stadium": "Vancouver",
     "date_local": "07 julio",
-    "time_local": "16:00",
-    "kickoff_at_utc": "2026-07-07T23:00:00Z"
+    "time_local": "13:00",
+    "kickoff_at_utc": "2026-07-07T20:00:00Z"
   },
   {
     "id": "CUAR_097",
@@ -1172,8 +1172,8 @@
     "away": null,
     "stadium": "Los Angeles",
     "date_local": "10 julio",
-    "time_local": "15:00",
-    "kickoff_at_utc": "2026-07-10T22:00:00Z"
+    "time_local": "12:00",
+    "kickoff_at_utc": "2026-07-10T19:00:00Z"
   },
   {
     "id": "CUAR_099",
@@ -1196,8 +1196,8 @@
     "away": null,
     "stadium": "Kansas City",
     "date_local": "11 julio",
-    "time_local": "21:00",
-    "kickoff_at_utc": "2026-07-12T02:00:00Z"
+    "time_local": "20:00",
+    "kickoff_at_utc": "2026-07-12T01:00:00Z"
   },
   {
     "id": "SEMI_101",
@@ -1208,8 +1208,8 @@
     "away": null,
     "stadium": "Dallas",
     "date_local": "14 julio",
-    "time_local": "15:00",
-    "kickoff_at_utc": "2026-07-14T20:00:00Z"
+    "time_local": "14:00",
+    "kickoff_at_utc": "2026-07-14T19:00:00Z"
   },
   {
     "id": "SEMI_102",
