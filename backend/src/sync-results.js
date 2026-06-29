@@ -290,6 +290,24 @@ async function syncResults(client) {
 
     lastSync = new Date();
 
+    // Notificar a n8n cuando hay resultados nuevos
+    const allUpdatedIds = [
+      ...updates.map((u) => u.args[2]),
+      ...espnUpdates.map((u) => u.args[2]),
+    ];
+    if (allUpdatedIds.length > 0 && process.env.N8N_RESULT_WEBHOOK_URL) {
+      const { rows: updatedMatches } = await client.execute({
+        sql: `SELECT id, home, away, home_score, away_score, phase FROM matches WHERE id IN (${allUpdatedIds.map(() => '?').join(',')})`,
+        args: allUpdatedIds,
+      });
+      fetch(process.env.N8N_RESULT_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matches: updatedMatches }),
+        signal: AbortSignal.timeout(10000),
+      }).catch((err) => console.log('[sync] n8n webhook error:', err.message));
+    }
+
     // Auto-poblar Dieciseisavos y fases posteriores según avance del torneo
     const { populateBracket, populateKnockoutRounds } = require('./utils/bracket-populator');
     const bracketResult = await populateBracket(client);
