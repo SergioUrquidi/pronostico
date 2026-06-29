@@ -245,8 +245,8 @@ async function populateKnockoutRounds(client) {
 
       const target = matchMap[entry.match];
       if (!target) continue;
-      // Saltar solo si ambos equipos ya están definidos
-      if (target.home !== null && target.away !== null) continue;
+      // Saltar si el partido ya tiene resultado (no modificar equipos de partidos ya jugados)
+      if (target.home_score !== null && target.away_score !== null) continue;
 
       const homeFeed = matchMap[entry.home_from];
       const awayFeed = matchMap[entry.away_from];
@@ -260,14 +260,16 @@ async function populateKnockoutRounds(client) {
 
       if (!homeTeam && !awayTeam) continue; // ningún partido previo tiene ganador aún
 
-      // Poblar solo el lado que ya se conoce si el otro aún no está listo
+      // Poblar o corregir el lado conocido (corrige valores incorrectos previos)
       if (homeTeam && awayTeam) {
-        console.log(`[bracket] ${entry.match} (${target.phase}): ${homeTeam} vs ${awayTeam}`);
-        updates.push({ sql: 'UPDATE matches SET home = ?, away = ? WHERE id = ?', args: [homeTeam, awayTeam, entry.match] });
-      } else if (homeTeam && target.home === null) {
+        if (target.home !== homeTeam || target.away !== awayTeam) {
+          console.log(`[bracket] ${entry.match} (${target.phase}): ${homeTeam} vs ${awayTeam}`);
+          updates.push({ sql: 'UPDATE matches SET home = ?, away = ? WHERE id = ?', args: [homeTeam, awayTeam, entry.match] });
+        }
+      } else if (homeTeam && target.home !== homeTeam) {
         console.log(`[bracket] ${entry.match} (${target.phase}): ${homeTeam} vs ? (pendiente)`);
         updates.push({ sql: 'UPDATE matches SET home = ? WHERE id = ?', args: [homeTeam, entry.match] });
-      } else if (awayTeam && target.away === null) {
+      } else if (awayTeam && target.away !== awayTeam) {
         console.log(`[bracket] ${entry.match} (${target.phase}): ? vs ${awayTeam} (pendiente)`);
         updates.push({ sql: 'UPDATE matches SET away = ? WHERE id = ?', args: [awayTeam, entry.match] });
       }
