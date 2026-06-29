@@ -1,5 +1,5 @@
 const express = require('express');
-const { sendMessage, getStatus, getQr, getPairingCode, getGroups, refreshPairingCode } = require('./client');
+const { sendMessage, getStatus, getQr, getPairingCode, getGroups, refreshPairingCode, resetSession } = require('./client');
 
 const router = express.Router();
 
@@ -47,6 +47,15 @@ router.post('/pairing-code/refresh', requireApiKey, async (_req, res) => {
   try {
     const code = await refreshPairingCode();
     res.json({ code });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/reset-session', requireApiKey, async (_req, res) => {
+  try {
+    await resetSession();
+    res.json({ ok: true, message: 'Sesion borrada — reinicia el servidor para obtener nuevo pairing code' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

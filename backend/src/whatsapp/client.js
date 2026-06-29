@@ -301,6 +301,21 @@ async function getGroups() {
   return Object.values(groups).map((g) => ({ id: g.id, name: g.subject }));
 }
 
+async function resetSession() {
+  const { rows } = await dbClient.execute("SELECT key FROM config WHERE key LIKE 'wa_%'");
+  for (const row of rows) {
+    await removeData(row.key);
+  }
+  if (sock) {
+    try { sock.end(); } catch {}
+    sock = null;
+  }
+  isReady = false;
+  pairingCode = null;
+  qrData = null;
+  console.log('[whatsapp] Sesion borrada — reiniciar servidor para reconectar');
+}
+
 async function refreshPairingCode() {
   if (!sock) throw new Error('WhatsApp no inicializado');
   const phone = process.env.WA_PHONE_NUMBER;
@@ -311,4 +326,4 @@ async function refreshPairingCode() {
   return code;
 }
 
-module.exports = { initWhatsApp, sendMessage, getStatus, getQr, getPairingCode, getGroups, refreshPairingCode };
+module.exports = { initWhatsApp, sendMessage, getStatus, getQr, getPairingCode, getGroups, refreshPairingCode, resetSession };
