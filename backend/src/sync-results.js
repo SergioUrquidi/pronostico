@@ -112,7 +112,13 @@ async function fetchEspnScores() {
       const homeEs = EN_TO_ES[home.team.displayName] ?? home.team.displayName.toUpperCase();
       const awayEs = EN_TO_ES[away.team.displayName] ?? away.team.displayName.toUpperCase();
       const isFinished = status !== 'STATUS_IN_PROGRESS';
-      scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore, finished: isFinished };
+      // Detectar ganador en penales: STATUS_FINAL_PEN + competitor.winner === true
+      let advanceWinner = null;
+      if (status === 'STATUS_FINAL_PEN') {
+        if (home.winner === true) advanceWinner = 'home';
+        else if (away.winner === true) advanceWinner = 'away';
+      }
+      scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore, finished: isFinished, advanceWinner };
     }
     return scoreMap;
   } catch {
@@ -218,27 +224,23 @@ async function syncResults(client) {
       const isReversed = !espnScores[directKey];
       const finalHome = isReversed ? espnData.awayScore : espnData.homeScore;
       const finalAway = isReversed ? espnData.homeScore : espnData.awayScore;
-      console.log(`[sync] ESPN fallback: ${dbMatch.home} ${finalHome}-${finalAway} ${dbMatch.away}`);
-      espnUpdates.push({
-        sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
-        args: [finalHome, finalAway, dbMatch.id],
-      });
-      // TODO-PENALES: reemplazar el push de arriba con este bloque para auto-setear advance_winner:
-      // const espnAdvWinner = espnData.advanceWinner ?? null;
-      // const advWinner = espnAdvWinner
-      //   ? (isReversed ? (espnAdvWinner === 'home' ? 'away' : 'home') : espnAdvWinner)
-      //   : null;
-      // if (KNOCKOUT_PHASES.has(dbMatch.phase) && advWinner && !dbMatch.advance_winner) {
-      //   espnUpdates.push({
-      //     sql: 'UPDATE matches SET home_score = ?, away_score = ?, advance_winner = ? WHERE id = ?',
-      //     args: [finalHome, finalAway, advWinner, dbMatch.id],
-      //   });
-      // } else {
-      //   espnUpdates.push({
-      //     sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
-      //     args: [finalHome, finalAway, dbMatch.id],
-      //   });
-      // }
+      const espnAdvWinner = espnData.advanceWinner ?? null;
+      const advWinner = espnAdvWinner
+        ? (isReversed ? (espnAdvWinner === 'home' ? 'away' : 'home') : espnAdvWinner)
+        : null;
+      if (KNOCKOUT_PHASES.has(dbMatch.phase) && advWinner && !dbMatch.advance_winner) {
+        console.log(`[sync] ESPN fallback (penales): ${dbMatch.home} ${finalHome}-${finalAway} ${dbMatch.away} → advance_winner=${advWinner}`);
+        espnUpdates.push({
+          sql: 'UPDATE matches SET home_score = ?, away_score = ?, advance_winner = ? WHERE id = ?',
+          args: [finalHome, finalAway, advWinner, dbMatch.id],
+        });
+      } else {
+        console.log(`[sync] ESPN fallback: ${dbMatch.home} ${finalHome}-${finalAway} ${dbMatch.away}`);
+        espnUpdates.push({
+          sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
+          args: [finalHome, finalAway, dbMatch.id],
+        });
+      }
     }
 
     if (espnUpdates.length > 0) {
@@ -250,7 +252,7 @@ async function syncResults(client) {
     const now = new Date().toISOString();
     const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
     const { rows: liveMatches } = await client.execute({
-      sql: `SELECT id, home, away, home_score, away_score FROM matches
+      sql: `SELECT id, phase, home, away, home_score, away_score, advance_winner FROM matches
             WHERE home IS NOT NULL AND kickoff_at_utc <= ? AND kickoff_at_utc >= ?`,
       args: [now, threeHoursAgo],
     });
@@ -267,13 +269,26 @@ async function syncResults(client) {
           const isReversed = !espnScores[directKey];
           const finalHome = isReversed ? espnData.awayScore : espnData.homeScore;
           const finalAway = isReversed ? espnData.homeScore : espnData.awayScore;
-          if (lm.home_score === finalHome && lm.away_score === finalAway) continue;
+          const scoreChanged = lm.home_score !== finalHome || lm.away_score !== finalAway;
+          const liveAdvWinner = espnData.advanceWinner
+            ? (isReversed ? (espnData.advanceWinner === 'home' ? 'away' : 'home') : espnData.advanceWinner)
+            : null;
+          const advWinnerChanged = liveAdvWinner && !lm.advance_winner && KNOCKOUT_PHASES.has(lm.phase ?? '');
+          if (!scoreChanged && !advWinnerChanged) continue;
           const tag = espnData.finished ? 'FT' : 'en curso';
-          console.log(`[sync] ESPN live: ${lm.home} ${finalHome}-${finalAway} ${lm.away} (${tag})`);
-          liveUpdates.push({
-            sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
-            args: [finalHome, finalAway, lm.id],
-          });
+          if (advWinnerChanged) {
+            console.log(`[sync] ESPN live (penales): ${lm.home} ${finalHome}-${finalAway} ${lm.away} → advance_winner=${liveAdvWinner} (${tag})`);
+            liveUpdates.push({
+              sql: 'UPDATE matches SET home_score = ?, away_score = ?, advance_winner = ? WHERE id = ?',
+              args: [finalHome, finalAway, liveAdvWinner, lm.id],
+            });
+          } else {
+            console.log(`[sync] ESPN live: ${lm.home} ${finalHome}-${finalAway} ${lm.away} (${tag})`);
+            liveUpdates.push({
+              sql: 'UPDATE matches SET home_score = ?, away_score = ? WHERE id = ?',
+              args: [finalHome, finalAway, lm.id],
+            });
+          }
         }
         if (liveUpdates.length > 0) {
           await client.batch(liveUpdates, 'write');
