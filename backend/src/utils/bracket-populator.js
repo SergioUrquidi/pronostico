@@ -258,7 +258,13 @@ async function populateKnockoutRounds(client) {
       const homeTeam = homeSide === 'loser' ? getLoser(homeFeed) : getWinner(homeFeed);
       const awayTeam = awaySide === 'loser' ? getLoser(awayFeed) : getWinner(awayFeed);
 
-      if (!homeTeam && !awayTeam) continue; // ningún partido previo tiene ganador aún
+      if (!homeTeam && !awayTeam) {
+        // Limpiar valores stale si el config cambio y ninguno de los feeders ha jugado aun
+        if (target.home !== null || target.away !== null) {
+          updates.push({ sql: 'UPDATE matches SET home = NULL, away = NULL WHERE id = ?', args: [entry.match] });
+        }
+        continue;
+      }
 
       // Poblar o corregir el lado conocido (corrige valores incorrectos previos)
       if (homeTeam && awayTeam) {
