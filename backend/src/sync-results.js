@@ -139,9 +139,9 @@ async function syncResults(client) {
       return;
     }
 
-    // Solo traer partidos sin resultado — los ya completados no cambian
+    // Traer todos los partidos con equipos definidos — siempre actualizar con el dato más reciente
     const { rows: dbMatches } = await client.execute(
-      'SELECT id, phase, home, away, home_score, away_score, advance_winner, kickoff_at_utc FROM matches WHERE home IS NOT NULL AND away IS NOT NULL AND (home_score IS NULL OR away_score IS NULL)'
+      'SELECT id, phase, home, away, home_score, away_score, advance_winner, kickoff_at_utc FROM matches WHERE home IS NOT NULL AND away IS NOT NULL'
     );
 
     // Index our matches by "HOME|AWAY" in Spanish
