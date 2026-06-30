@@ -268,7 +268,7 @@ async function populateKnockoutRounds(client) {
         }
       } else if (homeTeam && target.home !== homeTeam) {
         console.log(`[bracket] ${entry.match} (${target.phase}): ${homeTeam} vs ? (pendiente)`);
-        updates.push({ sql: 'UPDATE matches SET home = ? WHERE id = ?', args: [homeTeam, entry.match] });
+        updates.push({ sql: 'UPDATE matches SET home = ?, away = NULL WHERE id = ?', args: [homeTeam, entry.match] });
       } else if (awayTeam && target.away !== awayTeam) {
         console.log(`[bracket] ${entry.match} (${target.phase}): ? vs ${awayTeam} (pendiente)`);
         updates.push({ sql: 'UPDATE matches SET away = ? WHERE id = ?', args: [awayTeam, entry.match] });
