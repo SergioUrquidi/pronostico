@@ -101,10 +101,8 @@ async function fetchEspnScores() {
       const comp = event.competitions?.[0];
       if (!comp) continue;
       const status = event.status?.type?.name;
-      if (status !== 'STATUS_FULL_TIME' && status !== 'STATUS_IN_PROGRESS') continue;
-      // TODO-PENALES: cuando se confirme el status ESPN para penales, reemplazar la línea de arriba con:
-      // const FINISHED_STATUSES = new Set(['STATUS_FULL_TIME', 'STATUS_FINAL_PENALTY' /* verificar nombre real */]);
-      // if (!FINISHED_STATUSES.has(status) && status !== 'STATUS_IN_PROGRESS') continue;
+      // Excluir solo partidos no iniciados — aceptar cualquier status en curso o finalizado (incluyendo penales)
+      if (status === 'STATUS_SCHEDULED' || status === 'STATUS_POSTPONED' || status === 'STATUS_CANCELLED' || status === 'STATUS_CANCELED' || !status) continue;
       const home = comp.competitors?.find((c) => c.homeAway === 'home');
       const away = comp.competitors?.find((c) => c.homeAway === 'away');
       if (!home || !away) continue;
@@ -113,12 +111,8 @@ async function fetchEspnScores() {
       if (isNaN(homeScore) || isNaN(awayScore)) continue;
       const homeEs = EN_TO_ES[home.team.displayName] ?? home.team.displayName.toUpperCase();
       const awayEs = EN_TO_ES[away.team.displayName] ?? away.team.displayName.toUpperCase();
-      scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore, finished: status === 'STATUS_FULL_TIME' };
-      // TODO-PENALES: reemplazar la línea de arriba con estas tres líneas:
-      // const advanceWinner = (homeScore === awayScore && home.advance !== away.advance)
-      //   ? (home.advance ? 'home' : 'away')
-      //   : null;
-      // scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore, finished: status === 'STATUS_FULL_TIME', advanceWinner };
+      const isFinished = status !== 'STATUS_IN_PROGRESS';
+      scoreMap[`${homeEs}|${awayEs}`] = { homeScore, awayScore, finished: isFinished };
     }
     return scoreMap;
   } catch {
