@@ -102,10 +102,10 @@ export class Admin {
     const homeN = Number(home);
     const awayN = Number(away);
     const advanceWinner = this.advDraftFor(match.id);
-    // Require advance_winner for knockout draws (penalties)
+    // Warn for knockout draws without advance_winner, but allow saving mid-game
     if (KNOCKOUT_PHASES.has(match.phase) && homeN === awayN && !advanceWinner) {
-      this.showToast('Empate en knockout: indicá quién avanzó (penales)');
-      return;
+      const ok = confirm('Empate en eliminatoria sin ganador de penales. ¿Guardar igual (podés completar después)?');
+      if (!ok) return;
     }
     try {
       const aw = advanceWinner === 'home' || advanceWinner === 'away' ? advanceWinner : null;
