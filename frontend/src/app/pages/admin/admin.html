@@ -55,11 +55,13 @@
         <div class="player-pred-row">
           <span class="player-pred-match">{{ pred.home }} vs {{ pred.away }}<br><span class="tag">{{ pred.dateLocal }} {{ pred.timeLocal }}</span></span>
           <input class="input score-sm" type="number" min="0" max="20"
+            placeholder="0" aria-label="Goles local"
             [title]="pred.home + ' - local'"
             [value]="playerPredDraftFor(pred.matchId).home"
             (input)="setPlayerPredDraftHome(pred.matchId, $any($event.target).value)" />
           <span>–</span>
           <input class="input score-sm" type="number" min="0" max="20"
+            placeholder="0" aria-label="Goles visitante"
             [title]="pred.away + ' - visitante'"
             [value]="playerPredDraftFor(pred.matchId).away"
             (input)="setPlayerPredDraftAway(pred.matchId, $any($event.target).value)" />
@@ -126,10 +128,10 @@
 
         <div class="result-edit">
           <input class="input score" type="number" min="0" #homeScore [value]="match.homeScore ?? ''"
-                 [attr.aria-label]="'Goles ' + match.home" [title]="'Goles ' + match.home" placeholder="0" />
+                 aria-label="Goles local" [attr.aria-label]="'Goles ' + match.home" [title]="'Goles ' + match.home" placeholder="0" />
           <span>–</span>
           <input class="input score" type="number" min="0" #awayScore [value]="match.awayScore ?? ''"
-                 [attr.aria-label]="'Goles ' + match.away" [title]="'Goles ' + match.away" placeholder="0" />
+                 aria-label="Goles visitante" [attr.aria-label]="'Goles ' + match.away" [title]="'Goles ' + match.away" placeholder="0" />
           <button type="button" class="btn" (click)="saveResult(match, homeScore.value, awayScore.value)">
             Guardar resultado
           </button>
