@@ -43,6 +43,7 @@ export class Scoreboard {
       ]);
       this.board.set(board);
       this.standings.set(standings);
+      this.error.set('');
     } catch {
       if (!silent) this.error.set('No se pudo cargar la tabla. Intentá de nuevo.');
     } finally {
