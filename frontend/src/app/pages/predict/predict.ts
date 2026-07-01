@@ -24,7 +24,7 @@ export class Predict {
   groupAdvance = signal<GroupAdvanceMap>({});
   draft = signal<Record<string, { home: string; away: string; advance: string }>>({});
   changeCount = signal<Record<string, number>>({});
-  viewMode = signal<'grupo' | 'fecha'>('grupo');
+  viewMode = signal<'grupo' | 'fecha'>('fecha');
   selectedPhase = signal('Grupos');
   selectedGroup = signal('A');
   selectedDate = signal('');
@@ -110,7 +110,11 @@ export class Predict {
           };
         }
         this.draft.set(draft);
-        if (this.dates().length) this.selectedDate.set(this.dates()[0]);
+        if (this.dates().length) {
+          const sortedMatches = [...this.matches()].sort((a, b) => a.num - b.num);
+          const firstUnlocked = sortedMatches.find(m => !m.locked);
+          this.selectedDate.set(firstUnlocked?.dateLocal ?? this.dates()[0]);
+        }
       }
     } catch {
       if (!silent) this.error.set('No se pudo cargar los pronósticos. Intentá de nuevo.');
