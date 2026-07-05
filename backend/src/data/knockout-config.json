@@ -12,8 +12,8 @@
   ],
   "Cuartos": [
     { "match": "CUAR_097", "home_from": "OCTA_089", "away_from": "OCTA_090" },
-    { "match": "CUAR_098", "home_from": "OCTA_091", "away_from": "OCTA_092" },
-    { "match": "CUAR_099", "home_from": "OCTA_093", "away_from": "OCTA_094" },
+    { "match": "CUAR_098", "home_from": "OCTA_093", "away_from": "OCTA_094" },
+    { "match": "CUAR_099", "home_from": "OCTA_091", "away_from": "OCTA_092" },
     { "match": "CUAR_100", "home_from": "OCTA_095", "away_from": "OCTA_096" }
   ],
   "Semifinal": [
