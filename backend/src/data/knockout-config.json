@@ -1,12 +1,12 @@
 {
-  "_note": "Bracket oficial FIFA 2026 confirmado por imagen visual. Octavos corregidos: pares por posicion en el bracket, NO por secuencia del fixture. Izquierda: 074+077, 073+075, 083+084, 081+082. Derecha: 076+078, 079+080, 086+088, 085+087.",
+  "_note": "Bracket oficial FIFA 2026 verificado contra Wikipedia/FIFA match centre (M89-M96, jul-2026). Cada OCTA_0XX esta atado al estadio/fecha real de ese numero de partido FIFA; los pares de R32 que alimentan cada uno se corrigieron para que coincidan con ese estadio, no con el orden secuencial del fixture.",
   "Octavos": [
     { "match": "OCTA_089", "home_from": "R32_074", "away_from": "R32_077" },
     { "match": "OCTA_090", "home_from": "R32_073", "away_from": "R32_075" },
-    { "match": "OCTA_091", "home_from": "R32_083", "away_from": "R32_084" },
-    { "match": "OCTA_092", "home_from": "R32_081", "away_from": "R32_082" },
-    { "match": "OCTA_093", "home_from": "R32_076", "away_from": "R32_078" },
-    { "match": "OCTA_094", "home_from": "R32_079", "away_from": "R32_080" },
+    { "match": "OCTA_091", "home_from": "R32_076", "away_from": "R32_078" },
+    { "match": "OCTA_092", "home_from": "R32_079", "away_from": "R32_080" },
+    { "match": "OCTA_093", "home_from": "R32_083", "away_from": "R32_084" },
+    { "match": "OCTA_094", "home_from": "R32_081", "away_from": "R32_082" },
     { "match": "OCTA_095", "home_from": "R32_086", "away_from": "R32_088" },
     { "match": "OCTA_096", "home_from": "R32_085", "away_from": "R32_087" }
   ],
