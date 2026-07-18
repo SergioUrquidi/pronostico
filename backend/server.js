@@ -10,9 +10,7 @@ const predictionsRoutes = require('./src/routes/predictions.routes');
 const adminRoutes = require('./src/routes/admin.routes');
 const scoreboardRoutes = require('./src/routes/scoreboard.routes');
 const standingsRoutes = require('./src/routes/standings.routes');
-const whatsappRoutes = require('./src/whatsapp/routes');
 const notificationsRoutes = require('./src/routes/notifications.routes');
-const { initWhatsApp } = require('./src/whatsapp/client');
 
 const corsOptions = {
   origin: true,
@@ -33,7 +31,6 @@ app.use('/api/predictions', predictionsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/scoreboard', scoreboardRoutes);
 app.use('/api/standings', standingsRoutes);
-app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/notifications', notificationsRoutes);
 
 app.use((err, req, res, _next) => {
@@ -51,11 +48,6 @@ initDb()
     app.listen(PORT, () => {
       console.log(`Pronostico API escuchando en puerto ${PORT}`);
       startAutoSync(client, 5 * 60 * 1000); // sync cada 5 min
-      if (process.env.WHATSAPP_API_KEY && process.env.WA_PHONE_NUMBER) {
-        initWhatsApp().catch((err) => console.error('[whatsapp] Error al iniciar:', err.message));
-      } else {
-        console.log('[whatsapp] WHATSAPP_API_KEY o WA_PHONE_NUMBER no configurados — modulo desactivado');
-      }
     });
   })
   .catch((err) => {
