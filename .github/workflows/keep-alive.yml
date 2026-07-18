@@ -1,9 +1,6 @@
 name: Mantener despierto el backend (Render free tier)
 
 on:
-  schedule:
-    # Cada 10 minutos, antes de que Render duerma la instancia por inactividad (15 min)
-    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 jobs:
