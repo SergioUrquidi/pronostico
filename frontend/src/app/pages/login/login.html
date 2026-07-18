@@ -31,16 +31,8 @@
       @if (error()) {
         <div class="error">{{ error() }}</div>
       }
-      @if (countdown() > 0) {
-        <div class="waking">⏳ Servidor despertando... reintentando en {{ countdown() }}s</div>
-      }
-
       <button class="btn" type="submit" [disabled]="loading() || f.invalid">
-        @if (countdown() > 0) {
-          Reintentando en {{ countdown() }}s...
-        } @else {
-          {{ loading() ? 'Ingresando...' : 'Ingresar' }}
-        }
+        {{ loading() ? 'Ingresando...' : 'Ingresar' }}
       </button>
     </form>
   </div>
